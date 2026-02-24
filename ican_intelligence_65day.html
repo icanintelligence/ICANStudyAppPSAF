@@ -1,0 +1,2469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>ICAN Intelligence — PSAF Study System</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow+Condensed:wght@400;700;900&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#080b0f;--bg2:#0f1923;--bg3:#0a0f1a;--border:#1e293b;
+  --amber:#f59e0b;--green:#10b981;--blue:#3b82f6;--purple:#8b5cf6;--red:#ef4444;--teal:#14b8a6;
+  --text:#e2e8f0;--muted:#94a3b8;--dim:#64748b;--dimmer:#334155;
+  --mono:'Share Tech Mono','Courier New',monospace;--display:'Barlow Condensed',sans-serif;
+}
+body{background:var(--bg);color:var(--text);font-family:var(--mono);min-height:100vh}
+#confetti-canvas{position:fixed;top:0;left:0;pointer-events:none;z-index:9999;display:none}
+#toast{position:fixed;top:24px;left:50%;transform:translateX(-50%);background:var(--amber);color:#000;padding:14px 28px;border-radius:3px;font-weight:900;font-size:.9rem;z-index:9998;letter-spacing:.05em;box-shadow:0 4px 30px rgba(245,158,11,.5);display:none;font-family:var(--display)}
+
+/* ── LANDING ── */
+#view-landing{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:24px}
+.landing-card{background:var(--bg2);border:1px solid var(--border);border-top:4px solid var(--amber);border-radius:4px;padding:48px 40px;max-width:520px;width:100%;text-align:center}
+.landing-eyebrow{color:var(--amber);font-size:.6rem;letter-spacing:.4em;margin-bottom:16px}
+.landing-title{font-family:var(--display);font-size:clamp(2rem,6vw,3.2rem);font-weight:900;color:#fff;letter-spacing:.06em;line-height:1.1;margin-bottom:8px}
+.landing-sub{font-family:var(--display);font-size:1rem;color:var(--dim);letter-spacing:.15em;margin-bottom:32px}
+.landing-desc{color:var(--muted);font-size:.8rem;line-height:1.8;margin-bottom:36px;text-align:left;border-left:3px solid var(--blue);padding-left:14px}
+.date-label{color:var(--dim);font-size:.65rem;letter-spacing:.2em;display:block;margin-bottom:8px;text-align:left}
+.date-input{background:var(--bg3);border:1px solid var(--dimmer);color:var(--text);padding:12px 16px;border-radius:3px;font-family:var(--mono);font-size:.9rem;width:100%;margin-bottom:20px;outline:none;transition:border-color .2s}
+.date-input:focus{border-color:var(--amber)}
+.launch-btn{background:var(--amber);color:#000;border:none;padding:16px 32px;border-radius:3px;cursor:pointer;font-family:var(--display);font-weight:900;font-size:1rem;letter-spacing:.12em;width:100%;transition:opacity .2s}
+.launch-btn:hover{opacity:.9}
+.landing-note{color:var(--dim);font-size:.6rem;letter-spacing:.1em;margin-top:16px}
+
+/* ── HEADER ── */
+header{background:linear-gradient(135deg,#0f1923 0%,#0a0f1a 100%);border-bottom:2px solid var(--amber);padding:14px 24px;position:sticky;top:0;z-index:100;display:none}
+.header-inner{max-width:1100px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+.brand-eyebrow{color:var(--amber);font-size:.55rem;letter-spacing:.35em;margin-bottom:3px}
+.brand-title{font-family:var(--display);font-size:clamp(1rem,3vw,1.5rem);font-weight:900;color:#fff;letter-spacing:.12em}
+.brand-sub{font-family:var(--display);font-size:.7rem;color:var(--dim);letter-spacing:.2em}
+nav{display:flex;gap:6px;flex-wrap:wrap}
+.nav-btn{background:transparent;color:var(--muted);border:1px solid var(--dimmer);padding:6px 12px;border-radius:2px;cursor:pointer;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;font-family:var(--mono);transition:all .2s}
+.nav-btn.active{background:var(--amber);color:#000;border-color:var(--amber)}
+.reset-btn{background:transparent;color:var(--dim);border:1px solid var(--dimmer);padding:6px 10px;border-radius:2px;cursor:pointer;font-size:.6rem;font-family:var(--mono)}
+
+main{max-width:1100px;margin:0 auto;padding:24px 16px;display:none}
+.view{display:none}.view.active{display:block}
+
+/* ── SHARED COMPONENTS ── */
+.quote-box{background:linear-gradient(135deg,#0f2027,#203a43);border:1px solid #1e3a4a;border-left:4px solid var(--amber);padding:18px;border-radius:3px;margin-bottom:22px}
+.quote-label{color:var(--dim);font-size:.58rem;letter-spacing:.2em;margin-bottom:6px}
+.quote-text{color:#fbbf24;font-size:.88rem;font-style:italic;line-height:1.6}
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px;margin-bottom:22px}
+.stat-card{background:var(--bg2);border:1px solid var(--border);border-radius:3px;padding:16px;text-align:center}
+.stat-value{font-size:1.8rem;font-weight:900;font-family:var(--display)}
+.stat-label{color:var(--dim);font-size:.52rem;letter-spacing:.15em;margin-top:4px}
+.progress-wrap{background:var(--bg2);border:1px solid var(--border);padding:20px;border-radius:3px;margin-bottom:22px}
+.progress-header{display:flex;justify-content:space-between;margin-bottom:10px}
+.progress-bar-bg{background:#1e293b;border-radius:2px;height:10px;overflow:hidden}
+.progress-bar-fill{height:100%;border-radius:2px;transition:width .5s ease;background:linear-gradient(90deg,var(--amber),var(--green));box-shadow:0 0 8px rgba(245,158,11,.4)}
+.progress-sub{margin-top:6px;color:var(--dim);font-size:.6rem}
+.section-label{color:var(--dim);font-size:.6rem;letter-spacing:.2em;margin-bottom:14px}
+.phase-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-bottom:22px}
+.phase-card{background:var(--bg2);border:1px solid var(--border);border-radius:3px;padding:14px}
+.phase-name{font-size:.65rem;letter-spacing:.08em;margin-bottom:6px}
+.phase-row{display:flex;justify-content:space-between;font-size:.68rem}
+.phase-bar-bg{background:#1e293b;border-radius:2px;height:5px;margin-top:7px}
+.phase-bar-fill{height:100%;border-radius:2px;transition:width .4s}
+.today-box{background:linear-gradient(135deg,#0f1923 0%,#0a1628 100%);border:2px solid var(--amber);border-radius:3px;padding:22px;margin-bottom:22px}
+.today-label{color:var(--amber);font-size:.6rem;letter-spacing:.3em;margin-bottom:10px}
+
+/* ── DAY LIST ── */
+.day-item{display:grid;grid-template-columns:46px 1fr auto;align-items:center;gap:12px;background:var(--bg2);border:1px solid var(--border);border-radius:3px;padding:12px 14px;cursor:pointer;margin-bottom:7px;transition:all .15s;border-left:4px solid transparent}
+.day-item:hover{background:#0f1e2d}
+.day-item.done{background:#0a1a0d}
+.day-item.friday-day{background:#0a0f18;border-left-color:var(--teal)!important}
+.day-item.today-hl{border-right:2px solid var(--amber)}
+.day-num{font-size:.95rem;font-weight:900;text-align:center;font-family:var(--display)}
+.day-hrs{font-size:.55rem;color:#475569;text-align:center}
+.day-date{color:var(--dim);font-size:.6rem;margin-bottom:2px}
+.day-topic{color:var(--text);font-size:.8rem}
+.day-focus{color:var(--dim);font-size:.68rem}
+.today-badge{background:var(--amber);color:#000;font-size:.5rem;padding:1px 5px;border-radius:2px;margin-left:5px;font-family:var(--display);font-weight:900}
+.fri-badge{background:var(--teal);color:#000;font-size:.5rem;padding:1px 5px;border-radius:2px;margin-left:5px;font-family:var(--display);font-weight:900}
+.mini-bar-bg{background:#1e293b;border-radius:2px;height:4px;width:56px;margin-top:5px}
+.mini-bar-fill{height:100%;border-radius:2px}
+
+/* ── FILTERS ── */
+.filters{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:16px}
+.filter-btn{background:transparent;color:var(--muted);border:1px solid var(--dimmer);padding:5px 11px;border-radius:2px;cursor:pointer;font-size:.58rem;letter-spacing:.08em;font-family:var(--mono);transition:all .2s}
+.filter-btn.active{color:#000;border-color:transparent}
+
+/* ── DAY DETAIL ── */
+.back-btn{background:transparent;border:1px solid var(--dimmer);color:var(--muted);padding:6px 14px;border-radius:2px;cursor:pointer;margin-bottom:18px;font-family:var(--mono);font-size:.65rem;letter-spacing:.1em}
+.day-header{background:linear-gradient(135deg,#0f1923 0%,#0a1628 100%);border-radius:3px;padding:22px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px}
+.day-header-meta{font-size:.6rem;letter-spacing:.2em;color:var(--dim);margin-bottom:5px}
+.day-header-title{font-family:var(--display);font-size:1.25rem;font-weight:900;color:#fff;margin-bottom:5px}
+.day-header-focus{font-size:.78rem}
+.ch-ref{display:inline-block;background:#1e293b;color:var(--blue);font-size:.58rem;padding:2px 8px;border-radius:2px;margin-top:6px;letter-spacing:.08em}
+.complete-btn{padding:10px 20px;border-radius:2px;cursor:pointer;font-family:var(--display);font-weight:900;font-size:.78rem;letter-spacing:.08em;border:2px solid var(--amber);background:var(--amber);color:#000;white-space:nowrap;transition:all .2s}
+.complete-btn.done{background:#065f46;color:#6ee7b7;border-color:var(--green)}
+.method-box{background:var(--bg3);border:1px solid #1e3a4a;border-left:4px solid var(--blue);padding:14px;border-radius:3px;margin-bottom:18px}
+.method-label{color:var(--blue);font-size:.57rem;letter-spacing:.2em;margin-bottom:6px}
+.method-text{color:var(--muted);font-size:.8rem;line-height:1.8}
+.tabs{display:flex;border-bottom:1px solid var(--border);margin-bottom:16px}
+.tab-btn{background:transparent;border:none;border-bottom:2px solid transparent;color:var(--dim);padding:9px 18px;cursor:pointer;font-family:var(--mono);font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;transition:all .2s}
+.tab-btn.active{color:var(--amber);border-bottom-color:var(--amber)}
+.tab-content{display:none}.tab-content.active{display:block}
+.task-count{color:var(--dim);font-size:.6rem;letter-spacing:.12em;margin-bottom:12px}
+.task-item{display:flex;gap:12px;align-items:flex-start;background:var(--bg2);border:1px solid var(--border);border-radius:3px;padding:13px;cursor:pointer;margin-bottom:7px;transition:all .15s}
+.task-item:hover{border-color:var(--green)}
+.task-item.done{background:#0a1a0d;border-color:var(--green)}
+.task-item.section-header{cursor:default;background:var(--bg3);border-color:#1e3a4a;border-left:3px solid var(--blue)}
+.task-item.section-header:hover{border-color:#1e3a4a}
+.checkbox{width:18px;height:18px;min-width:18px;border:2px solid var(--dimmer);border-radius:2px;background:transparent;display:flex;align-items:center;justify-content:center;margin-top:2px;transition:all .2s}
+.checkbox.checked{background:var(--green);border-color:var(--green)}
+.checkbox-tick{color:#000;font-size:.65rem;font-weight:900}
+.task-text{color:#cbd5e1;font-size:.8rem;line-height:1.6;transition:all .2s}
+.task-text.done{text-decoration:line-through;text-decoration-color:var(--green);color:#6ee7b7}
+.task-loc{color:var(--blue);font-size:.6rem;display:block;margin-top:3px;letter-spacing:.05em}
+.recall-item{background:var(--bg2);border:1px solid #1e3a4a;border-left:4px solid var(--purple);border-radius:3px;padding:16px;margin-bottom:9px}
+.recall-item.done{background:#0a1a0d;border-left-color:var(--green)}
+.recall-inner{display:flex;gap:10px;align-items:flex-start}
+.recall-num{color:var(--purple);font-size:.7rem;font-weight:900;min-width:20px}
+.recall-q{color:var(--text);font-size:.8rem;line-height:1.6;margin-bottom:10px}
+.recall-btn{background:transparent;color:var(--purple);border:1px solid var(--purple);padding:4px 12px;border-radius:2px;cursor:pointer;font-family:var(--mono);font-size:.6rem;letter-spacing:.08em;transition:all .2s}
+.recall-btn.done{background:#065f46;color:#6ee7b7;border-color:var(--green)}
+.exam-tip-box{background:linear-gradient(135deg,#1a0a0a 0%,#2a0f0f 100%);border:2px solid var(--red);border-radius:3px;padding:24px}
+.exam-tip-label{color:var(--red);font-size:.6rem;letter-spacing:.3em;margin-bottom:14px}
+.exam-tip-text{color:#fca5a5;font-size:.9rem;line-height:1.9}
+.friday-detail{background:linear-gradient(135deg,#051a1a 0%,#0a2a2a 100%);border:2px solid var(--teal);border-radius:3px;padding:24px}
+.friday-label{color:var(--teal);font-size:.6rem;letter-spacing:.3em;margin-bottom:14px}
+.friday-text{color:#99f6e4;font-size:.88rem;line-height:1.9}
+.day-nav{display:flex;justify-content:space-between;margin-top:24px;gap:10px}
+.prev-btn{background:transparent;border:1px solid var(--dimmer);color:var(--muted);padding:8px 16px;border-radius:2px;cursor:pointer;font-family:var(--mono);font-size:.65rem}
+.next-btn{background:var(--amber);color:#000;border:none;padding:8px 16px;border-radius:2px;cursor:pointer;font-family:var(--display);font-weight:900;font-size:.72rem;letter-spacing:.05em}
+footer{border-top:1px solid var(--border);padding:14px;text-align:center;margin-top:36px}
+footer p{color:var(--dimmer);font-size:.57rem;letter-spacing:.15em}
+@media(max-width:600px){.day-item{grid-template-columns:38px 1fr}.day-header{flex-direction:column}.tab-btn{padding:7px 9px;font-size:.55rem}.stats-grid{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<canvas id="confetti-canvas"></canvas>
+<div id="toast"></div>
+
+<!-- ═══ LANDING / START DATE PICKER ═══ -->
+<div id="view-landing">
+  <div class="landing-card">
+    <div class="landing-eyebrow">ICAN SKILLS LEVEL · B6 · PUBLIC SECTOR ACCOUNTING &amp; FINANCE</div>
+    <div class="landing-title">ICAN<br>INTELLIGENCE</div>
+    <div class="landing-sub">65-DAY EXAMINATION SYSTEM</div>
+    <p class="landing-desc">
+      A precision-engineered 65-day study system built directly from the ICAN 2025 PSAF Study Text.
+      Every chapter. Every section. Every subtopic — covered in sequence, with active recall drills
+      and examiner-focused tips baked into each session. Fridays are reserved for structured revision — including real past exam questions with model answers.
+    </p>
+    <label class="date-label">// SELECT YOUR STUDY START DATE</label>
+    <input type="date" class="date-input" id="start-date-input" />
+    <button class="launch-btn" onclick="launchPlan()">⚔ INITIALISE BATTLE PLAN →</button>
+    <div class="landing-note">Your progress saves automatically in your browser · Choose any start date</div>
+  </div>
+</div>
+
+<!-- ═══ MAIN APP ═══ -->
+<header id="app-header">
+  <div class="header-inner">
+    <div>
+      <div class="brand-eyebrow">ICAN PSAF · B6 · MAY 2026</div>
+      <div class="brand-title">ICAN INTELLIGENCE</div>
+      <div class="brand-sub">65-DAY EXAMINATION SYSTEM</div>
+    </div>
+    <nav>
+      <button class="nav-btn active" onclick="showView('dashboard')" id="nav-dashboard">📊 Dashboard</button>
+      <button class="nav-btn" onclick="showView('schedule')" id="nav-schedule">📅 Schedule</button>
+      <button class="reset-btn" onclick="resetPlan()" title="Change start date">⟳ Reset</button>
+    </nav>
+  </div>
+</header>
+
+<main id="app-main">
+  <!-- Dashboard -->
+  <div id="view-dashboard" class="view active">
+    <div class="quote-box"><div class="quote-label">// DAILY INTELLIGENCE BRIEFING</div><div class="quote-text" id="daily-quote"></div></div>
+    <div class="stats-grid">
+      <div class="stat-card" style="border-top:3px solid var(--green)"><div class="stat-value color-green" id="stat-done" style="color:var(--green)">0</div><div class="stat-label">SESSIONS COMPLETE</div></div>
+      <div class="stat-card" style="border-top:3px solid var(--amber)"><div class="stat-value" id="stat-left" style="color:var(--amber)">65</div><div class="stat-label">SESSIONS LEFT</div></div>
+      <div class="stat-card" style="border-top:3px solid var(--blue)"><div class="stat-value" id="stat-hours" style="color:var(--blue)">0</div><div class="stat-label">HOURS LOGGED</div></div>
+      <div class="stat-card" style="border-top:3px solid var(--red)"><div class="stat-value" id="stat-streak" style="color:var(--red)">0🔥</div><div class="stat-label">DAY STREAK</div></div>
+    </div>
+    <div class="progress-wrap">
+      <div class="progress-header"><span class="section-label" style="margin-bottom:0">OVERALL MISSION PROGRESS</span><span id="overall-pct" style="color:var(--amber);font-weight:900;font-family:var(--display)">0%</span></div>
+      <div class="progress-bar-bg"><div class="progress-bar-fill" id="overall-bar" style="width:0%"></div></div>
+      <div class="progress-sub" id="overall-sub"></div>
+    </div>
+    <div class="section-label">// PHASE BREAKDOWN</div>
+    <div class="phase-grid" id="phase-grid"></div>
+    <div id="today-box-wrapper"></div>
+    <div class="section-label" style="margin-top:4px">// ALL SESSIONS</div>
+    <div id="dashboard-day-list"></div>
+  </div>
+
+  <!-- Schedule -->
+  <div id="view-schedule" class="view">
+    <div class="filters" id="phase-filters"></div>
+    <div id="schedule-day-list"></div>
+  </div>
+
+  <!-- Day Detail -->
+  <div id="view-day" class="view">
+    <button class="back-btn" onclick="goBack()">← BACK</button>
+    <div class="day-header" id="day-header">
+      <div>
+        <div class="day-header-meta" id="dd-meta"></div>
+        <div class="day-header-title" id="dd-title"></div>
+        <div class="day-header-focus" id="dd-focus"></div>
+        <span class="ch-ref" id="dd-ref"></span>
+      </div>
+      <button class="complete-btn" id="dd-complete-btn" onclick="toggleDayComplete()">MARK COMPLETE 🎯</button>
+    </div>
+    <div class="method-box"><div class="method-label">// SESSION METHOD — FOLLOW THIS EXACTLY</div><div class="method-text" id="dd-method"></div></div>
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('subtopics')">📋 Tasks</button>
+      <button class="tab-btn" onclick="switchTab('recall')">🧠 Active Recall</button>
+      <button class="tab-btn" onclick="switchTab('examtip')">🔥 Exam Tips & Past Qs</button>
+    </div>
+    <div id="tab-subtopics" class="tab-content active">
+      <div class="task-count" id="task-count"></div>
+      <div id="task-list"></div>
+    </div>
+    <div id="tab-recall" class="tab-content">
+      <div class="task-count" id="recall-count"></div>
+      <div id="recall-list"></div>
+    </div>
+    <div id="tab-examtip" class="tab-content">
+      <div id="examtip-content"></div>
+    </div>
+    <div class="day-nav">
+      <button class="prev-btn" id="prev-btn" onclick="navDay(-1)">← PREV</button>
+      <button class="next-btn" id="next-btn" onclick="navDay(1)">NEXT →</button>
+    </div>
+  </div>
+</main>
+
+<footer><p id="footer-text">ICAN INTELLIGENCE · 65-DAY EXAMINATION SYSTEM · PSAF B6</p></footer>
+
+<script>
+// ══════════════════════════════════════════════════════════
+// CONSTANTS
+// ══════════════════════════════════════════════════════════
+const QUOTES = [
+  "Every great accountant started exactly where you are. Keep going.",
+  "The pain of discipline is lighter than the pain of regret.",
+  "One chapter at a time. One day at a time. One exam at a time.",
+  "You didn't come this far to only come this far.",
+  "Excellence is not a destination — it's a discipline you practise daily.",
+  "When you feel like quitting, remember why you started.",
+  "ICAN doesn't test who studied the most. It tests who understood the most.",
+  "Active recall today means exam success tomorrow.",
+  "Your future FCA title is waiting on the other side of this grind.",
+  "The budget may be tight. The knowledge doesn't have to be.",
+  "Boredom is just resistance in disguise. Push through it.",
+  "Each topic mastered is a weapon loaded for exam day.",
+  "Nigeria needs accountants who understand public finance. That's you.",
+  "PSAF is a marathon. You're training like a sprinter. That's the edge.",
+  "Every hour you invest today is compounding interest against exam anxiety.",
+  "Read → Close → Recall → Check. That's the loop that builds champions.",
+  "The examiner is not your enemy. Lack of preparation is.",
+];
+
+const WIN_MSGS = [
+  "LETSGOOOO! Another session in the bag! 🔥",
+  "SOLDIER! Session complete. The finish line just got closer. ⚡",
+  "UNSTOPPABLE! Keep this energy going! 💪",
+  "Your future FCA self is PROUD of you right now. 🏆",
+  "One more down. The exam doesn't stand a chance. 🎯",
+  "You showed up. That's the difference. 🔥",
+  "The grind is real. The results will be too. 💥",
+  "STREAK ALIVE. DON'T BREAK IT. 🔥🔥",
+];
+
+const PHASES = [
+  {id:"phase1",label:"Phase 1 — Public Sector Core",color:"#f59e0b"},
+  {id:"phase2",label:"Phase 2 — Public Finance Core",color:"#3b82f6"},
+  {id:"phase3",label:"Phase 3 — Second-Tier Topics",color:"#8b5cf6"},
+  {id:"phase4",label:"Phase 4 — Low-Effort High-Yield",color:"#14b8a6"},
+  {id:"phase5",label:"Phase 5 — Intensive Revision",color:"#ef4444"},
+  {id:"friday",label:"Friday — Weekly Revision",color:"#14b8a6"},
+];
+
+// ══════════════════════════════════════════════════════════
+// 52 CONTENT STUDY DAYS (non-Friday sessions)
+// ══════════════════════════════════════════════════════════
+const CONTENT_DAYS = [
+// ─── PHASE 1: PUBLIC SECTOR CORE ───────────────────────────────────────
+{
+  phase:"phase1",
+  topic:"Budgeting & Budgetary Controls",
+  focus:"Purposes of Budget, NCOA & Traditional/Line-Item Budgeting",
+  ref:"Ch.11 · Sec 11.0–11.5.1",
+  hours:1,
+  method:"📖 Read Ch.11 Sec 11.0–11.5 (25 min) → 📝 Close book, brain-dump: What is a budget? List all 7 purposes. → ✅ Re-open and check gaps → 🗂 Write a one-liner for each NCOA segment",
+  subtopics:[
+
+    {text:"11.2 Introduction — define 'budget'; state 7 purposes of government budget",loc:"Ch.11 p.251"},
+    {text:"11.3 Purposes of budget — the 4 main purposes in a government context",loc:"Ch.11 p.252"},
+    {text:"11.4 Budgeting with NCOA — how the National Chart of Accounts structures the budget",loc:"Ch.11 p.252"},
+    {text:"11.4.1 NCOA structure — learn the 6 segments: Administrative, Economic, Function, Programme, Fund, Geographic",loc:"Ch.11 p.252"},
+    {text:"11.4.2 Steps for budgeting with NCOA — 6 sequential steps to follow",loc:"Ch.11 p.252"},
+    {text:"11.4.3 Format for annual budgeting — Revenue, Recurrent, Capital budget formats",loc:"Ch.11 p.253"},
+    {text:"11.5 Methods of preparing government budget in Nigeria — overview",loc:"Ch.11 p.253"},
+    {text:"11.5.1 Traditional/Line-item (Incremental) budgeting — definition, features, 3 determinant factors",loc:"Ch.11 p.254"},
+    {text:"11.5.1 Line-item: Advantages vs Disadvantages — list and understand both sides",loc:"Ch.11 p.255"},
+  ],
+  recall:[
+    "State and explain 7 purposes of a government budget (as listed in 11.2)",
+    "Name and explain ALL 6 NCOA segments used for budgeting",
+    "What are the 3 factors that determine the percentage increase in incremental budgeting?",
+    "State 3 features of line-item budgeting and 4 of its disadvantages",
+    "What are the 4 main government budget formats listed in sec 11.4.3?",
+  ],
+  examTip:"🔥 Budget purposes, NCOA segments, and line-item features appear EVERY diet. Know NCOA: Administrative, Economic, Function, Programme, Fund, Geographic. Mnemonic: AEFPFG.",
+},
+{
+  phase:"phase1",
+  topic:"Budgeting & Budgetary Controls",
+  focus:"Performance Budgeting, PPBS, ZBB & Rolling Budgets",
+  ref:"Ch.11 · Sec 11.6–11.13",
+  hours:1,
+  method:"📖 Read Ch.11 Sec 11.6–11.13 (30 min) → 📝 Without notes: write ZBB steps + advantages/disadvantages table → ✅ Check → Compare ZBB vs PPBS in your own words",
+  subtopics:[
+    {text:"11.6 Zero-Based Budgeting (ZBB) — definition, history (Peter Pyhrr / Jimmy Carter 1976)",loc:"Ch.11 p.255"},
+    {text:"11.6 ZBB concept — 'decision package'; justify every item from zero base annually",loc:"Ch.11 p.255"},
+    {text:"11.6 ZBB advantages — eliminates waste, promotes efficiency, good for priority ranking",loc:"Ch.11 p.256"},
+    {text:"11.6 ZBB disadvantages — time-consuming, requires skilled staff, may not suit all MDAs",loc:"Ch.11 p.257"},
+    {text:"11.7 Planning, Programming & Budgeting System (PPBS) — definition and 4 stages",loc:"Ch.11 p.257"},
+    {text:"11.7 PPBS advantages and limitations — note key differences from ZBB",loc:"Ch.11 p.257"},
+    {text:"11.8 Performance budgeting — links inputs to measurable outputs; output-based",loc:"Ch.11 p.258"},
+    {text:"11.9 Periodic budgeting — defined period (usually 1 year); pros and cons",loc:"Ch.11 p.259"},
+    {text:"11.10 Flexible budget — adjusts to actual activity level; compare with fixed budget",loc:"Ch.11 p.259"},
+    {text:"11.11 Capital expenditure budgeting — long-term projects; note distinction from recurrent",loc:"Ch.11 p.259"},
+    {text:"11.12 Base estimate — what it is and how it applies",loc:"Ch.11 p.259"},
+    {text:"11.13 Rolling/Continuous budget — definition; how it rolls forward month by month",loc:"Ch.11 p.259"},
+  ],
+  recall:[
+    "Define ZBB. Who introduced it and when? What is a 'decision package'?",
+    "State 4 advantages and 4 disadvantages of ZBB",
+    "Explain PPBS — what do the 4 letters stand for and what happens at each stage?",
+    "How does Performance budgeting differ from line-item budgeting?",
+    "What is a rolling budget? Give a practical example of how it works month by month",
+  ],
+  examTip:"🔥 ZBB is the most tested budget type. Know: every item justified from ZERO, decision packages, ranking by priority. PPBS = Planning → Programming → Budgeting → Evaluation.",
+},
+{
+  phase:"phase1",
+  topic:"Budgeting & Budgetary Controls",
+  focus:"Factors Against Budgeting, Budget Cycle, Supplementary Estimates & Virement",
+  ref:"Ch.11 · Sec 11.14–11.25",
+  hours:1,
+  method:"📖 Read Ch.11 Sec 11.14–11.25 (30 min) → 📝 Write the budget preparation procedure as a numbered flow → List virement conditions from memory → ✅ Check",
+  subtopics:[
+    {text:"11.14 Factors militating against budgeting in public sector — list and explain each",loc:"Ch.11 p.260"},
+    {text:"11.15 Committed growth — what it means and its impact on budget flexibility",loc:"Ch.11 p.260"},
+    {text:"11.16 Procedure for preparation and approval of budget — the full cycle",loc:"Ch.11 p.261"},
+    {text:"11.17 Reserves/balances — how carried over balances are treated",loc:"Ch.11 p.262"},
+    {text:"11.18 Supplementary estimate — definition, when needed, approval process",loc:"Ch.11 p.262"},
+    {text:"11.19 Uses of budget — beyond planning; control and evaluation uses",loc:"Ch.11 p.263"},
+    {text:"11.20 Personnel cost budget — format and key items",loc:"Ch.11 p.263"},
+    {text:"11.21 Overhead cost budget — format, categories of overhead",loc:"Ch.11 p.264"},
+    {text:"11.22 Functions of Ministry of Budget and Planning — list all key functions",loc:"Ch.11 p.264"},
+    {text:"11.23 Revenue budget — format, how to prepare revenue side",loc:"Ch.11 p.265"},
+    {text:"11.24 Budgetary control — definition, process, responsibility centres; virement conditions",loc:"Ch.11 p.265"},
+    {text:"11.25 Cash budgeting — format, how to prepare; deficit vs surplus treatment",loc:"Ch.11 p.266"},
+  ],
+  recall:[
+    "State 5 factors that militate against effective budgeting in Nigeria's public sector",
+    "Describe the full budget preparation and approval cycle in government",
+    "What is a Supplementary Estimate? When is it needed and who approves it?",
+    "What is virement? State 3 conditions that must be met for virement to be approved",
+    "List 5 functions of the Ministry of Budget and Planning",
+  ],
+  examTip:"🔥 Virement = switching funds between heads without new appropriation. Conditions: (1) savings exist, (2) within same ministry, (3) not capital to recurrent, (4) AGF approval.",
+},
+{
+  phase:"phase1",
+  topic:"Budgeting & Budgetary Controls",
+  focus:"IPSAS 24, Budgetary Control Variances & Worked Examples",
+  ref:"Ch.11 · Sec 11.26–11.28",
+  hours:1,
+  method:"📝 Attempt ALL Ch.11 worked examples (35 min) → 🔴 Mark your own work strictly → Re-read only sections where you failed → Understand each error",
+  subtopics:[
+    {text:"11.26 IPSAS 24 — Presentation of budget information in financial statements: scope and requirements",loc:"Ch.11 p.267"},
+    {text:"11.26 IPSAS 24 — What must be disclosed: approved budget vs final budget vs actual",loc:"Ch.11 p.267"},
+    {text:"11.26 IPSAS 24 — Explanation of material differences between budget and actual",loc:"Ch.11 p.268"},
+    {text:"11.27 Chapter review — revisit all key terms and definitions from Ch.11",loc:"Ch.11 p.268"},
+    {text:"11.28 Worked examples — compute budget variances (Favourable vs Adverse)",loc:"Ch.11 p.269"},
+    {text:"11.28 Worked examples — prepare a cash budget from given data",loc:"Ch.11 p.270"},
+    {text:"11.28 Worked examples — prepare a personnel cost budget",loc:"Ch.11 p.271"},
+    {text:"11.28 Variance analysis — Expenditure variance formula: Budget - Actual (A if actual >)",loc:"Ch.11 p.272"},
+  ],
+  recall:[
+    "What does IPSAS 24 require? Name the 3 columns that must appear in budget comparison",
+    "What is the variance formula for expenditure? For revenue?",
+    "When is a variance Favourable (F) vs Adverse (A) for revenue? For expenditure?",
+    "Prepare a simple cash budget format (receipts side and payments side)",
+    "What are 3 reasons for material differences between budget and actual?",
+  ],
+  examTip:"🔥 IPSAS 24: must show Approved Budget, Final Budget, Actual. Variance = positive = Favourable. Examiner tests both format AND interpretation. Practice until automatic.",
+},
+{
+  phase:"phase1",
+  topic:"Authorization of Government Expenditure & Financial Control",
+  focus:"Appropriation Act, CRF, Expenditure Chain & Warrants",
+  ref:"Ch.15 · Sec 15.0–15.9",
+  hours:1,
+  method:"📖 Read Ch.15 Sec 15.0–15.9 (40 min) → 📝 Draw expenditure authorization flowchart from memory → Annotate with constitutional sections → ✅ Check",
+  subtopics:[
+    {text:"15.2 Introduction — overview of government expenditure authorization system",loc:"Ch.15"},
+    {text:"15.3 The Appropriation Act — constitutional basis; Sections 80-83 of 1999 Constitution",loc:"Ch.15"},
+    {text:"15.3 Section 80 — no money withdrawn from CRF without Appropriation Act",loc:"Ch.15"},
+    {text:"15.3 Section 81 — President's duty to prepare and lay estimates before NASS",loc:"Ch.15"},
+    {text:"15.3 Section 82 — Authorisation for 3 months before new appropriation act",loc:"Ch.15"},
+    {text:"15.3 Section 83 — contingencies fund; maximum 0.5% of previous appropriation",loc:"Ch.15"},
+    {text:"15.4 Consolidated Revenue Fund (CRF) — definition, charges vs issues distinction",loc:"Ch.15"},
+    {text:"15.5 Expenditure authorization chain — Appropriation → Warrant → Commitment → Payment",loc:"Ch.15"},
+    {text:"15.6 Types of warrants — Provisional, Release, Supplementary; who issues each",loc:"Ch.15"},
+    {text:"15.7 Commitment control system — purpose, stages, how it prevents overexpenditure",loc:"Ch.15"},
+  ],
+  recall:[
+    "State the content of Sections 80, 81, 82, and 83 of the 1999 Constitution",
+    "What is the difference between CRF charges and CRF issues? Give 2 examples of each",
+    "Describe the 5-step government expenditure authorization cycle",
+    "Name 3 types of warrants and state who issues each",
+    "What is the commitment control system? State its 3 stages",
+  ],
+  examTip:"🔥 Constitutional sections are FREQUENTLY quoted. CRF Charges = automatic (debt service, pensions). CRF Issues = need Appropriation Act authority. Examiners test this distinction.",
+},
+{
+  phase:"phase1",
+  topic:"Authorization of Government Expenditure & Financial Control",
+  focus:"Internal Controls, COSO Framework, Internal Audit & Financial Regulations",
+  ref:"Ch.15 · Sec 15.10–15.18",
+  hours:1,
+  method:"📖 Read Ch.15 Sec 15.10–15.18 (40 min) → 📝 List COSO 5 components from memory → Compare internal audit vs external audit in 2-column table → ✅ Check",
+  subtopics:[
+    {text:"15.10 Internal control — definition, objectives (reliability, compliance, safeguarding assets)",loc:"Ch.15"},
+    {text:"15.10 COSO framework — 5 components: Control environment, Risk assessment, Control activities, Information & communication, Monitoring",loc:"Ch.15"},
+    {text:"15.11 Internal audit — mandate, independence, reporting line in MDAs",loc:"Ch.15"},
+    {text:"15.11 Internal audit functions — pre-payment audit; post-payment audit; systems audit",loc:"Ch.15"},
+    {text:"15.12 Pre-payment vs post-payment audit — definitions, key differences",loc:"Ch.15"},
+    {text:"15.13 Financial Regulations (FR) — purpose, scope, who it applies to",loc:"Ch.15"},
+    {text:"15.13 Key FR provisions — payment procedures, voucher requirements, authority levels",loc:"Ch.15"},
+    {text:"15.14 Treasury circulars — what they are and their binding nature",loc:"Ch.15"},
+    {text:"15.15 Accounting documentation — payment vouchers, cash books, ledgers",loc:"Ch.15"},
+  ],
+  recall:[
+    "Name and explain the 5 components of the COSO internal control framework",
+    "What are the 3 objectives of an internal control system?",
+    "Distinguish between pre-payment audit and post-payment audit",
+    "What are Financial Regulations? Name 3 key provisions they contain",
+    "State 3 functions of the internal auditor in a government MDA",
+  ],
+  examTip:"🔥 COSO = Control Environment, Risk Assessment, Control Activities, Information & Communication, Monitoring. Write CRCI M. Examiners expect you to explain ALL 5.",
+},
+{
+  phase:"phase1",
+  topic:"Authorization of Government Expenditure & Financial Control",
+  focus:"OAGF, Accountant-General, Auditor-General & Worked Examples",
+  ref:"Ch.15 · Sec 15.19–15.25 + Worked Examples",
+  hours:1,
+  method:"📖 Read Ch.15 Sec 15.19+ (20 min) → 📝 OAGF vs AuGF 2-column comparison table → Attempt all worked examples → 🔴 Mark strictly",
+  subtopics:[
+    {text:"15.19 Office of the Accountant-General of the Federation (OAGF) — mandate and structure",loc:"Ch.15"},
+    {text:"15.19 Functions of the Accountant-General — list all statutory functions",loc:"Ch.15"},
+    {text:"15.20 Auditor-General for the Federation (AuGF) — constitutional basis: Sections 85-86",loc:"Ch.15"},
+    {text:"15.20 Section 85 — AuGF appointment, tenure, independence",loc:"Ch.15"},
+    {text:"15.20 Section 86 — AuGF powers: access to records, reports to NASS",loc:"Ch.15"},
+    {text:"15.20 AuGF audit scope — CRF accounts (not MDAs directly)",loc:"Ch.15"},
+    {text:"15.21 External audit reports — unqualified, qualified, adverse, disclaimer",loc:"Ch.15"},
+    {text:"15.22 Public Accounts Committee (PAC) — role, powers, how it reviews AuGF report",loc:"Ch.15"},
+    {text:"Worked examples — expenditure authorization scenarios; identify control failures",loc:"Ch.15"},
+  ],
+  recall:[
+    "State 6 functions of the Accountant-General of the Federation",
+    "What do Sections 85 and 86 of the 1999 Constitution provide for the AuGF?",
+    "What is the scope of the AuGF's audit mandate? Can the AuGF audit MDAs?",
+    "Name 4 types of audit opinion and state when each is appropriate",
+    "What is the role of the Public Accounts Committee in NASS?",
+  ],
+  examTip:"🔥 AuGF audits the CRF — NOT individual MDAs (that's the internal auditor). AuGF submits report to NASS (not the President). Very commonly tested distinction.",
+},
+{
+  phase:"phase1",
+  topic:"Sources of Government Revenue",
+  focus:"Tax Revenue: Types, Administration & the Federation Account",
+  ref:"Ch.14 · Sec 14.0–14.9",
+  hours:1,
+  method:"📖 Read Ch.14 Sec 14.0–14.9 (35 min) → 📝 List all taxes + their administering authority without notes → Draw FAAC sharing pie from memory → ✅ Check percentages",
+  subtopics:[
+    {text:"14.2 Introduction — classify revenue: Tax vs Non-tax; Oil vs Non-oil",loc:"Ch.14"},
+    {text:"14.3 Companies Income Tax (CIT) — administered by FIRS; rate and application",loc:"Ch.14"},
+    {text:"14.3 Personal Income Tax (PAYE) — administered by SIRS; who bears it",loc:"Ch.14"},
+    {text:"14.3 Value Added Tax (VAT) — administered by FIRS; current rate 7.5%",loc:"Ch.14"},
+    {text:"14.3 Petroleum Profits Tax (PPT) — administered by FIRS; applies to upstream oil",loc:"Ch.14"},
+    {text:"14.3 Capital Gains Tax (CGT), Stamp Duties — administering bodies and rates",loc:"Ch.14"},
+    {text:"14.3 Customs & Excise Duties — administered by NCS (Nigeria Customs Service)",loc:"Ch.14"},
+    {text:"14.4 Federation Account — constitutional basis (Section 162); what flows into it",loc:"Ch.14"},
+    {text:"14.5 FAAC — Federation Account Allocation Committee; composition and meeting schedule",loc:"Ch.14"},
+    {text:"14.5 FAAC sharing formula — Federal 52.68%, States 26.72%, LGAs 20.60%",loc:"Ch.14"},
+    {text:"14.6 Derivation principle — 13% of mineral revenue returned to producing states",loc:"Ch.14"},
+  ],
+  recall:[
+    "List 8 types of Nigerian tax revenue and the authority that administers each",
+    "What is the current VAT rate in Nigeria? Who remits it? Who administers it?",
+    "State Section 162 of the 1999 Constitution — what does it establish?",
+    "State the FAAC sharing formula — exact percentages for all 3 tiers",
+    "What is the derivation principle? What percentage applies and to what type of revenue?",
+  ],
+  examTip:"🔥 FAAC: FG 52.68%, States 26.72%, LGAs 20.60%. Derivation = 13% of mineral revenue. These percentages appear in calculations AND theory. Memorise them exactly.",
+},
+{
+  phase:"phase1",
+  topic:"Sources of Government Revenue",
+  focus:"Non-Tax Revenue, IGR, Special Funds, Finance Act & Worked Examples",
+  ref:"Ch.14 · Sec 14.10–14.18",
+  hours:1,
+  method:"📖 Read Ch.14 Sec 14.10–14.18 (30 min) → 📝 List all non-tax revenues → Attempt all worked examples → 🔴 Mark and note errors",
+  subtopics:[
+    {text:"14.10 Non-tax revenues — fines, fees, rents, royalties, licences, dividends from SOEs",loc:"Ch.14"},
+    {text:"14.11 Internally Generated Revenue (IGR) — definition; importance for states and LGAs",loc:"Ch.14"},
+    {text:"14.11 IGR components — market fees, property rates, vehicle licences, entertainment tax",loc:"Ch.14"},
+    {text:"14.12 Grants and aids — bilateral, multilateral; conditions attached",loc:"Ch.14"},
+    {text:"14.13 Appropriation-in-Aid — definition; accounting treatment; approval required",loc:"Ch.14"},
+    {text:"14.14 Special funds — Ecological Fund, Stabilisation Fund, Natural Resources Development Fund",loc:"Ch.14"},
+    {text:"14.14 Special fund percentages from FAAC — know the allocation for each",loc:"Ch.14"},
+    {text:"14.15 Challenges of revenue generation in Nigeria — state and explain 5",loc:"Ch.14"},
+    {text:"14.16 Chapter review — revisit key definitions",loc:"Ch.14"},
+    {text:"14.17 Worked examples — revenue classification, FAAC allocation calculations",loc:"Ch.14"},
+  ],
+  recall:[
+    "Give 6 examples of non-tax government revenue",
+    "What is Appropriation-in-Aid? How is it treated in the accounts?",
+    "Name 3 special funds and state their purpose and funding source",
+    "State 5 challenges of public revenue generation in Nigeria",
+    "Calculate: If total FAAC pool is ₦1 trillion, how much does each tier receive?",
+  ],
+  examTip:"🔥 Appropriation-in-Aid: departmental receipts used to meet specific expenditure — must be authorised by the Appropriation Act. Special funds come BEFORE the 3-tier sharing.",
+},
+{
+  phase:"phase1",
+  topic:"Cash Basis Accounting & Monthly Transcripts",
+  focus:"Cash Basis Principles, Fund Accounting & Payment System",
+  ref:"Ch.18 · Sec 18.0–18.8",
+  hours:1,
+  method:"📖 Read Ch.18 Sec 18.0–18.8 (35 min) → 📝 Draw the CRF flow diagram from memory → List 4 advantages of cash basis → ✅ Check",
+  subtopics:[
+    {text:"18.2 Introduction — definition of cash basis; when revenue and expenditure are recognised",loc:"Ch.18"},
+    {text:"18.3 Advantages of cash basis accounting — simplicity, objectivity, verifiability",loc:"Ch.18"},
+    {text:"18.3 Limitations of cash basis accounting — ignores accruals, incomplete picture",loc:"Ch.18"},
+    {text:"18.4 Consolidated Revenue Fund (CRF) — nature and what flows through it",loc:"Ch.18"},
+    {text:"18.5 Fund accounting in government — General Fund, Special Fund, Capital Fund",loc:"Ch.18"},
+    {text:"18.6 Government receipts — classification and recording procedures",loc:"Ch.18"},
+    {text:"18.7 Government payment system — stages from commitment to payment",loc:"Ch.18"},
+    {text:"18.7 Payment voucher — content requirements; who signs; numbering system",loc:"Ch.18"},
+    {text:"18.8 Sub-accounting officers — authority limits; delegation of payment powers",loc:"Ch.18"},
+  ],
+  recall:[
+    "Define cash basis accounting. When exactly is revenue recognised? When is expenditure?",
+    "State 4 advantages and 3 limitations of cash basis accounting",
+    "What flows through the CRF? Give 3 examples of receipts and 3 of payments",
+    "Distinguish between General Fund, Special Fund, and Capital Fund",
+    "What must a payment voucher contain? State 5 mandatory elements",
+  ],
+  examTip:"🔥 Cash basis: recognised when cash is RECEIVED (revenue) or PAID (expenditure). This is the opposite of accrual basis. The distinction is a standard exam question.",
+},
+{
+  phase:"phase1",
+  topic:"Cash Basis Accounting & Monthly Transcripts",
+  focus:"Monthly Transcripts — Format, Reconciliation & Advances in Transcripts",
+  ref:"Ch.18 · Sec 18.9–18.16",
+  hours:1,
+  method:"📖 Read Ch.18 Sec 18.9–18.16 (30 min) → 📝 Reproduce the Monthly Transcript format from memory (2-sided) → Practice one worked example → ✅ Check",
+  subtopics:[
+    {text:"18.9 Monthly Transcript — definition; purpose; who prepares and who receives it",loc:"Ch.18"},
+    {text:"18.10 Format of Monthly Transcript — Revenue (Dr) side and Expenditure (Cr) side",loc:"Ch.18"},
+    {text:"18.10 Revenue section — how to record: Approved revenue head, amount received",loc:"Ch.18"},
+    {text:"18.10 Expenditure section — how to record: head of expenditure, amount spent",loc:"Ch.18"},
+    {text:"18.11 Cash book and its relationship to the Monthly Transcript",loc:"Ch.18"},
+    {text:"18.12 Reconciliation of monthly transcripts — process and common adjustments",loc:"Ch.18"},
+    {text:"18.13 Advances in transcripts — imprest system; memorandum items treatment",loc:"Ch.18"},
+    {text:"18.13 Types of advances — imprest, personal, motor vehicle, housing advances",loc:"Ch.18"},
+    {text:"18.14 Treatment of un-retired advances — year-end treatment",loc:"Ch.18"},
+    {text:"18.15 Common errors in Monthly Transcript preparation",loc:"Ch.18"},
+    {text:"18.16 Chapter review — revisit key concepts",loc:"Ch.18"},
+  ],
+  recall:[
+    "What is a Monthly Transcript? Who prepares it? Who receives it?",
+    "Draw the 2-sided format of a Monthly Transcript (headings and columns)",
+    "How are advances treated in the Monthly Transcript? Are they expenditure?",
+    "What reconciliation must be performed monthly? State 3 items to reconcile",
+    "State 3 common errors candidates make in transcript preparation",
+  ],
+  examTip:"🔥 Monthly Transcript: Receipts side (Dr) | Payments side (Cr). Advances are MEMORANDUM items — not actual expenditure until retired. Balance = opening cash + receipts - payments.",
+},
+{
+  phase:"phase1",
+  topic:"Cash Basis Accounting & Monthly Transcripts",
+  focus:"Full Worked Examples — Monthly Transcript Preparation & Reconciliation",
+  ref:"Ch.18 · Worked Examples",
+  hours:2,
+  method:"📝 Attempt ALL Ch.18 worked examples under timed conditions (60 min) → 🔴 Mark strictly → Identify every error → Re-do failed sections → 📊 Make 1-page visual summary",
+  subtopics:[
+    {text:"Worked example 1 — Prepare a complete Monthly Transcript from raw transaction data",loc:"Ch.18 worked examples"},
+    {text:"Worked example 2 — Reconcile cash book balance to Monthly Transcript balance",loc:"Ch.18 worked examples"},
+    {text:"Worked example 3 — Handle advances and imprest in a transcript scenario",loc:"Ch.18 worked examples"},
+    {text:"Worked example 4 — Identify and correct errors in a given Monthly Transcript",loc:"Ch.18 worked examples"},
+    {text:"Speed drill — reproduce blank transcript format in under 2 minutes",loc:"Ch.18"},
+    {text:"Link exercise — connect the Appropriation Act authorisation to payment voucher to transcript",loc:"Ch.15 + Ch.18"},
+  ],
+  recall:[
+    "From memory: prepare the shell format of a Monthly Transcript (all column headings)",
+    "State the 5 stages in processing a government payment (commitment to recording)",
+    "What happens if a payment voucher is incorrectly prepared?",
+    "How does the Appropriation Act connect to the Monthly Transcript?",
+    "What is the difference between a cash book and a Monthly Transcript?",
+  ],
+  examTip:"🔥 Speed matters. In the exam you may need to prepare a transcript in 20 minutes. If you can't do it automatically, keep drilling the format.",
+},
+{
+  phase:"phase1",
+  topic:"Statutory Financial Statements (Cash Basis)",
+  focus:"Statement of Receipts & Payments — Framework & Format",
+  ref:"Ch.21 · Sec 21.0–21.6",
+  hours:1,
+  method:"📖 Read Ch.21 Sec 21.0–21.6 (40 min) → 📝 Draw the Statement of Receipts & Payments format from memory → ✅ Check structure and headings",
+  subtopics:[
+    {text:"21.2 Introduction — overview of statutory FS required under cash basis IPSAS",loc:"Ch.21"},
+    {text:"21.2 Constitutional basis — s.84-85 mandate for public accounts",loc:"Ch.21"},
+    {text:"21.3 Cash Basis IPSAS — the single standard; scope and application",loc:"Ch.21"},
+    {text:"21.4 Statement of Receipts and Payments — definition; what it shows",loc:"Ch.21"},
+    {text:"21.4 R&P format — Opening balance, Receipts (by category), Payments (by head), Closing balance",loc:"Ch.21"},
+    {text:"21.4 Classification of receipts — recurrent vs capital; tax vs non-tax",loc:"Ch.21"},
+    {text:"21.4 Classification of payments — recurrent vs capital; by head of expenditure",loc:"Ch.21"},
+    {text:"21.5 Comparative figures — requirement to show prior year alongside current year",loc:"Ch.21"},
+    {text:"21.6 Notes to the financial statements — mandatory disclosures",loc:"Ch.21"},
+  ],
+  recall:[
+    "List all financial statements required under the Cash Basis IPSAS standard",
+    "Draw the full format of a Statement of Receipts and Payments (all sections)",
+    "What is the difference between recurrent receipts and capital receipts? Give 2 examples each",
+    "Which constitutional section mandates preparation of public accounts?",
+    "What comparative information must be disclosed in the R&P statement?",
+  ],
+  examTip:"🔥 R&P statement: Opening Balance + Receipts - Payments = Closing Balance. Always classify receipts and payments into recurrent and capital. Format marks are free marks.",
+},
+{
+  phase:"phase1",
+  topic:"Statutory Financial Statements (Cash Basis)",
+  focus:"Appropriation Account, CRF Account & Lapse of Appropriation",
+  ref:"Ch.21 · Sec 21.7–21.12",
+  hours:1,
+  method:"📖 Read Ch.21 Sec 21.7–21.12 (35 min) → 📝 Draw Appropriation Account format from memory → Explain lapse of appropriation in your own words → ✅ Check",
+  subtopics:[
+    {text:"21.7 Appropriation Account — what it shows; how it differs from R&P statement",loc:"Ch.21"},
+    {text:"21.7 Appropriation Account format — Approved vote vs Amount issued vs Amount spent",loc:"Ch.21"},
+    {text:"21.7 Surplus (savings) vs Deficit (overexpenditure) — how each is shown",loc:"Ch.21"},
+    {text:"21.8 Lapse of appropriation — unspent funds lapse; when they can be re-voted",loc:"Ch.21"},
+    {text:"21.9 CRF Account — structure; shows all money passing through CRF",loc:"Ch.21"},
+    {text:"21.10 Recurrent vs Capital accounts — separate appropriation accounts for each",loc:"Ch.21"},
+    {text:"21.11 Federation Account Statement — federal government transfers",loc:"Ch.21"},
+    {text:"21.12 Other financial statements — Statement of Cash Balances, Consolidated statements",loc:"Ch.21"},
+  ],
+  recall:[
+    "What does the Appropriation Account show that the R&P statement does not?",
+    "Draw the format of an Appropriation Account (columns and key lines)",
+    "What does 'lapse of appropriation' mean? What happens to unspent voted funds at year-end?",
+    "How is an overexpenditure shown in the Appropriation Account?",
+    "What is the CRF Account and what does it record?",
+  ],
+  examTip:"🔥 Appropriation Account: Approved Vote | Amount Issued | Amount Spent | Saving/(Overexpenditure). Net balance = zero (savings in some heads offset overexp in others).",
+},
+{
+  phase:"phase1",
+  topic:"Statutory Financial Statements (Cash Basis)",
+  focus:"Full Practice — Cash-Basis FS Preparation & Deep Worked Examples",
+  ref:"Ch.21 · Worked Examples",
+  hours:2,
+  method:"📝 Prepare a full R&P statement AND Appropriation Account from given trial balance data (50 min) → 🔴 Mark strictly against model → Note every format error → Redo once",
+  subtopics:[
+    {text:"Worked example 1 — Prepare full Statement of Receipts & Payments from raw data",loc:"Ch.21 worked examples"},
+    {text:"Worked example 2 — Prepare Appropriation Account with variances",loc:"Ch.21 worked examples"},
+    {text:"Worked example 3 — Prepare CRF Account from given ledger balances",loc:"Ch.21 worked examples"},
+    {text:"Error spotting drill — identify 5 formatting errors in a given sample statement",loc:"Ch.21"},
+    {text:"Speed drill — reproduce both statement formats from memory in under 5 minutes",loc:"Ch.21"},
+    {text:"Cross-link — how does the R&P feed into the Appropriation Account?",loc:"Ch.21"},
+  ],
+  recall:[
+    "From a set of given data, prepare a complete Statement of Receipts and Payments",
+    "How do you present an overexpenditure in the Appropriation Account?",
+    "What notes are required for government cash-basis financial statements?",
+    "List 3 common examiner traps in cash-basis FS preparation questions",
+  ],
+  examTip:"🔥 Spend 5 minutes planning before writing any FS question. Identify recurrent vs capital. Label columns clearly. Comparative figures must be shown. Format errors = lost marks.",
+},
+{
+  phase:"phase1",
+  topic:"PHASE 1 PART A REVIEW",
+  focus:"Rapid-Fire Active Recall — Topics: Budgeting, Expenditure Auth, Revenue, Cash Basis, Statutory FS",
+  ref:"Ch.11 · Ch.14 · Ch.15 · Ch.18 · Ch.21",
+  hours:1,
+  method:"📝 NO READING TODAY. Pure active recall only. Set 5-minute timer per topic. Write → Check → Score → Identify weak spots",
+  subtopics:[
+    {text:"RAPID FIRE: 5 budget types — write one advantage and one disadvantage of each",loc:"Ch.11"},
+    {text:"RAPID FIRE: COSO 5 components — name and explain each",loc:"Ch.15"},
+    {text:"RAPID FIRE: FAAC percentages — write from memory for all 3 tiers",loc:"Ch.14"},
+    {text:"RAPID FIRE: Monthly Transcript format — reproduce the 2-sided shell",loc:"Ch.18"},
+    {text:"RAPID FIRE: Appropriation Account format — all columns from memory",loc:"Ch.21"},
+    {text:"RAPID FIRE: Constitutional sections 80-83 and 85-86 — state each",loc:"Ch.15"},
+    {text:"RAPID FIRE: 3 types of warrants — name and define each",loc:"Ch.15"},
+    {text:"Self-score: how many did you get right without looking?",loc:"All"},
+  ],
+  recall:[
+    "Can you list 5 budget types with one advantage each WITHOUT NOTES?",
+    "Can you write FAAC percentages from memory — exact figures?",
+    "Can you reproduce Monthly Transcript AND Appropriation Account formats from memory?",
+    "Can you state Sections 80, 81, 82, 83, 85, 86 — one sentence each?",
+  ],
+  examTip:"🔥 If you scored below 70% on this review, flag those specific topics. Your revision plan for the Friday session should target exactly those gaps.",
+},
+{
+  phase:"phase1",
+  topic:"IPSAS — General Knowledge",
+  focus:"IPSASB Structure, IPSAS Objectives & Qualitative Characteristics",
+  ref:"Ch.28 · Sec 28.0–28.10",
+  hours:1,
+  method:"📖 Read Ch.28 Sec 28.0–28.10 (35 min) → 📝 Brain-dump all qualitative characteristics → Make Cash vs Accrual IPSAS comparison table → ✅ Check",
+  subtopics:[
+    {text:"28.2 What is IPSAS? — International Public Sector Accounting Standards",loc:"Ch.28"},
+    {text:"28.3 IPSASB — International Public Sector Accounting Standards Board; an IFAC body",loc:"Ch.28"},
+    {text:"28.4 Objectives of IPSAS — accountability, transparency, comparability, consistency",loc:"Ch.28"},
+    {text:"28.5 Users of IPSAS financial statements — legislators, public, donors, lenders, management",loc:"Ch.28"},
+    {text:"28.6 Qualitative characteristics of IPSAS — Understandability, Relevance, Reliability, Comparability",loc:"Ch.28"},
+    {text:"28.6 Sub-qualities of reliability — Faithful representation, Substance over form, Neutrality, Prudence",loc:"Ch.28"},
+    {text:"28.7 Difference between Cash Basis IPSAS and Accrual IPSAS — scope, recognition rules",loc:"Ch.28"},
+    {text:"28.8 Bases of accounting on a spectrum — Cash → Modified Cash → Modified Accrual → Full Accrual",loc:"Ch.28"},
+    {text:"28.9 Nigeria's current position on the IPSAS adoption spectrum",loc:"Ch.28"},
+    {text:"28.10 Advantages of adopting full accrual IPSAS in Nigeria — 5 key benefits",loc:"Ch.28"},
+  ],
+  recall:[
+    "What is IPSASB? Under which body does it operate? Is it a government body?",
+    "State 5 objectives of IPSAS",
+    "Name and explain the 4 qualitative characteristics of IPSAS financial information",
+    "Explain the 4 points on the accounting bases spectrum from pure cash to full accrual",
+    "Name 5 classes of users of government financial statements and their information needs",
+  ],
+  examTip:"🔥 IPSASB is an INDEPENDENT standard-setting body under IFAC. Not a government body. Qualitative characteristics = Understandability, Relevance, Reliability, Comparability (URRC).",
+},
+{
+  phase:"phase1",
+  topic:"IPSAS — General Knowledge",
+  focus:"Key IPSAS Standards — Numbers, Titles & Scope",
+  ref:"Ch.28 · Sec 28.11–28.25",
+  hours:1,
+  method:"📖 Read Ch.28 Sec 28.11+ (40 min) → 📝 Make reference table: Standard No. | Title | Key requirement | Recognition rule → Cover 'requirement' column and test yourself",
+  subtopics:[
+    {text:"Cash Basis IPSAS — the single standard; recognition: when cash received/paid",loc:"Ch.28"},
+    {text:"IPSAS 1 — Presentation of Financial Statements (accrual); structure requirements",loc:"Ch.28"},
+    {text:"IPSAS 2 — Cash Flow Statements; 3 activities: Operating, Investing, Financing",loc:"Ch.28"},
+    {text:"IPSAS 3 — Accounting Policies, Changes in Estimates and Errors; retrospective application",loc:"Ch.28"},
+    {text:"IPSAS 9 — Revenue from Exchange Transactions; recognition when probable + measurable",loc:"Ch.28"},
+    {text:"IPSAS 12 — Inventories; lower of cost or NRV; FIFO or weighted average cost",loc:"Ch.28"},
+    {text:"IPSAS 17 — Property, Plant and Equipment; cost model vs revaluation model",loc:"Ch.28"},
+    {text:"IPSAS 19 — Provisions, Contingent Liabilities and Contingent Assets",loc:"Ch.28"},
+    {text:"IPSAS 23 — Revenue from Non-Exchange Transactions (taxes, grants); conditions recognition",loc:"Ch.28"},
+    {text:"IPSAS 24 — Presentation of Budget Information in Financial Statements; 3-column format",loc:"Ch.28"},
+    {text:"IPSAS 33 — First-time Adoption of Accrual Basis IPSAS; 3-year transition",loc:"Ch.28"},
+    {text:"Other key standards — IPSAS 4 (FX), IPSAS 13 (Leases), IPSAS 21 (Impairment)",loc:"Ch.28"},
+  ],
+  recall:[
+    "What does IPSAS 1 require about the structure of financial statements?",
+    "How does IPSAS 17 define PPE? State the two subsequent measurement models",
+    "Distinguish IPSAS 9 (exchange revenue) from IPSAS 23 (non-exchange revenue) — give 2 examples each",
+    "What 3 columns must appear in the budget comparison under IPSAS 24?",
+    "State the scope and key requirement of IPSAS 12 on inventories",
+  ],
+  examTip:"🔥 'Identify which IPSAS applies to this scenario' is a common question type. Know: taxes → IPSAS 23. Equipment → IPSAS 17. Inventories → IPSAS 12. Budget comparison → IPSAS 24.",
+},
+{
+  phase:"phase1",
+  topic:"Financial Statements — Accrual Basis",
+  focus:"Statement of Financial Position — Components, Format & Classification",
+  ref:"Ch.23 · Sec 23.0–23.5",
+  hours:1,
+  method:"📖 Read Ch.23 Sec 23.0–23.5 (40 min) → 📝 Draw full SoFP format from memory → Classify 10 items as current/non-current, asset/liability → ✅ Check",
+  subtopics:[
+    {text:"23.2 Overview of accrual-basis FS set — the 4 statements required under IPSAS 1",loc:"Ch.23"},
+    {text:"23.3 Statement of Financial Position — definition; Net Assets = Assets - Liabilities",loc:"Ch.23"},
+    {text:"23.3 Non-current assets — PPE (IPSAS 17), Intangibles, Long-term investments",loc:"Ch.23"},
+    {text:"23.3 Current assets — Cash, Receivables, Inventory; 12-month threshold",loc:"Ch.23"},
+    {text:"23.3 Non-current liabilities — Long-term borrowings, Provisions, Deferred revenue",loc:"Ch.23"},
+    {text:"23.3 Current liabilities — Payables, Short-term borrowings, Accruals",loc:"Ch.23"},
+    {text:"23.4 Net assets/equity — Accumulated Surplus/(Deficit) + Reserves",loc:"Ch.23"},
+    {text:"23.4 'Net assets' vs 'equity' — why government uses 'net assets' (no shareholders)",loc:"Ch.23"},
+    {text:"23.5 PPE recognition and measurement — initial cost; subsequent: cost or revaluation model",loc:"Ch.23"},
+    {text:"23.5 Depreciation in government accounts — straight-line, reducing balance methods",loc:"Ch.23"},
+  ],
+  recall:[
+    "Draw the full format of a Statement of Financial Position for a government entity",
+    "Classify 8 items: Land, Trade payables, Cash, 10-year bond payable, Inventory, Prepayments, Accumulated depreciation, Receivables",
+    "How is PPE initially measured? What are the two subsequent measurement models?",
+    "What is 'Net Assets'? How does it differ from 'equity' in a company?",
+    "State 2 items that appear in a government SoFP but not in a company balance sheet",
+  ],
+  examTip:"🔥 Government SoFP: Net Assets (NOT equity). Equation: Assets - Liabilities = Net Assets = Accumulated Surplus + Reserves. No share capital, no retained profit — that's for companies.",
+},
+{
+  phase:"phase1",
+  topic:"Financial Statements — Accrual Basis",
+  focus:"Statement of Financial Performance & Statement of Changes in Net Assets",
+  ref:"Ch.23 · Sec 23.6–23.9",
+  hours:1,
+  method:"📖 Read Ch.23 Sec 23.6–23.9 (35 min) → 📝 Prepare both statement formats from scratch → Trace: how surplus from SoFP flows into SoCNAE → ✅ Check",
+  subtopics:[
+    {text:"23.6 Statement of Financial Performance — government's income statement equivalent",loc:"Ch.23"},
+    {text:"23.6 Revenue — exchange (IPSAS 9) vs non-exchange (IPSAS 23) revenue types",loc:"Ch.23"},
+    {text:"23.6 Non-exchange revenue examples — taxes, fines, grants, transfers",loc:"Ch.23"},
+    {text:"23.6 Exchange revenue examples — fees for services, sale of goods, interest earned",loc:"Ch.23"},
+    {text:"23.6 Expenses — classify by nature (depreciation, staff, supplies) or function",loc:"Ch.23"},
+    {text:"23.7 Surplus/(Deficit) for the period — shown at bottom of SoFP",loc:"Ch.23"},
+    {text:"23.8 Statement of Changes in Net Assets — opening balance + surplus - distributions",loc:"Ch.23"},
+    {text:"23.8 Movements in SoCNAE — prior period adjustments, revaluations, surplus for year",loc:"Ch.23"},
+    {text:"23.9 Prior period errors — IAS 8/IPSAS 3; retrospective restatement required",loc:"Ch.23"},
+  ],
+  recall:[
+    "Draw the Statement of Financial Performance format (all major headings and subtotals)",
+    "Distinguish exchange revenue from non-exchange revenue — give 3 examples of each",
+    "Under IPSAS 23, when is tax revenue recognised?",
+    "What items appear in the Statement of Changes in Net Assets?",
+    "How is a prior period error treated? What is retrospective restatement?",
+  ],
+  examTip:"🔥 Tax revenue = non-exchange (IPSAS 23) — recognised when government has a legal claim and amount is reliably measurable. Grants with conditions: recognise as revenue only when conditions met.",
+},
+{
+  phase:"phase1",
+  topic:"Financial Statements — Accrual Basis",
+  focus:"Cash Flow Statement (IPSAS 2) & Budget Comparison (IPSAS 24)",
+  ref:"Ch.23 · Sec 23.10–23.14",
+  hours:1,
+  method:"📖 Read Ch.23 Sec 23.10–23.14 (30 min) → 📝 Prepare cash flow statement skeleton → Practice IPSAS 24 comparison table format → ✅ Check",
+  subtopics:[
+    {text:"23.10 Cash Flow Statement — purpose; governed by IPSAS 2",loc:"Ch.23"},
+    {text:"23.10 Operating activities — day-to-day: tax receipts, wages, supplies paid",loc:"Ch.23"},
+    {text:"23.10 Investing activities — purchase/sale of PPE, long-term investments",loc:"Ch.23"},
+    {text:"23.10 Financing activities — borrowings raised/repaid, capital grants received",loc:"Ch.23"},
+    {text:"23.10 Direct method — government preference; shows actual cash flows",loc:"Ch.23"},
+    {text:"23.11 Indirect method — starts from surplus; adds back non-cash items",loc:"Ch.23"},
+    {text:"23.12 IPSAS 24 — Comparison statement: Approved Budget | Final Budget | Actual",loc:"Ch.23"},
+    {text:"23.12 IPSAS 24 — reconciliation of budget basis to accounting basis",loc:"Ch.23"},
+    {text:"23.13 Notes to financial statements — significant accounting policies; key disclosures",loc:"Ch.23"},
+    {text:"23.14 Chapter review — revisit all 4 statements and their interconnections",loc:"Ch.23"},
+  ],
+  recall:[
+    "State the 3 activities in a Cash Flow Statement and give 2 items from each",
+    "Is interest paid an operating or financing cash flow under IPSAS 2? Why?",
+    "State the 3 columns required in the IPSAS 24 budget comparison statement",
+    "What is the difference between the direct and indirect method of cash flow presentation?",
+    "What is the 'budget basis to accounting basis' reconciliation? Why is it needed?",
+  ],
+  examTip:"🔥 Government entities use the DIRECT method for cash flows (shows actual receipts and payments). Indirect method = starts from surplus and reverses non-cash items.",
+},
+{
+  phase:"phase1",
+  topic:"Financial Statements — Accrual Basis",
+  focus:"Full Accrual FS Practice — Complete Set Preparation",
+  ref:"Ch.23 · Worked Examples",
+  hours:2,
+  method:"📝 Full practice: prepare complete accrual FS set (SoFP + SoFP + SoCNAE + CFS) from trial balance (70 min) → 🔴 Mark strictly → Write 'lessons learned' → Redo weak statements",
+  subtopics:[
+    {text:"Full practice: Statement of Financial Position from adjusted trial balance",loc:"Ch.23 worked examples"},
+    {text:"Full practice: Statement of Financial Performance — classify revenues and expenses",loc:"Ch.23 worked examples"},
+    {text:"Full practice: Statement of Changes in Net Assets — trace prior year to current",loc:"Ch.23 worked examples"},
+    {text:"Full practice: Cash Flow Statement — direct method from given data",loc:"Ch.23 worked examples"},
+    {text:"IPSAS 24 practice: prepare budget comparison with material differences noted",loc:"Ch.23 worked examples"},
+    {text:"Common errors drill: depreciation omission, accrual misclassification, wrong sign",loc:"Ch.23"},
+    {text:"Speed test: all 4 statement headings from memory in 90 seconds",loc:"Ch.23"},
+  ],
+  recall:[
+    "Without notes: write the heading and main line items of ALL 4 accrual statements",
+    "How is depreciation treated in government accrual accounts?",
+    "What is the key difference between government accrual FS and company FS (3 differences)?",
+    "How do you treat a capital grant received in the CFS? Which activity?",
+  ],
+  examTip:"🔥 This is a high-mark question every diet. Target: full set in 40–45 minutes. If you can't — keep drilling. Speed + accuracy = marks. Use headings exactly as IPSAS specifies.",
+},
+{
+  phase:"phase1",
+  topic:"IPSAS 33 — First-time Adoption",
+  focus:"Scope, Purpose, 3-Year Transition & Exemptions",
+  ref:"Ch.24 · Sec 24.0–24.8",
+  hours:1,
+  method:"📖 Read Ch.24 Sec 24.0–24.8 (35 min) → 📝 3-column table: Item | Must Recognise Day 1 | May Exclude Yr 1-3 → Make mnemonics for exclusions → ✅ Check",
+  subtopics:[
+    {text:"24.2 What is IPSAS 33? — purpose: manages transition from cash to full accrual IPSAS",loc:"Ch.24"},
+    {text:"24.3 Scope — who must apply IPSAS 33 (first-time adopters of accrual basis)",loc:"Ch.24"},
+    {text:"24.4 The 3-year transitional period — what reliefs apply in Years 1, 2, 3",loc:"Ch.24"},
+    {text:"24.4 Year 1 exemptions — may exclude: PPE, heritage assets, social benefits, defence assets",loc:"Ch.24"},
+    {text:"24.4 Year 2 — must start to include more assets; exemptions narrow",loc:"Ch.24"},
+    {text:"24.4 Year 3 — final year; must present full comparative statements",loc:"Ch.24"},
+    {text:"24.5 Items that MUST be recognised from Day 1 — cash, borrowings, CRF balances, investment",loc:"Ch.24"},
+    {text:"24.6 Opening Statement of Financial Position — how to prepare at transition date",loc:"Ch.24"},
+    {text:"24.7 Measurement at transition — no standard measurement for first-time adopted assets",loc:"Ch.24"},
+    {text:"24.8 Disclosure requirements during transition — 4 key disclosures required",loc:"Ch.24"},
+  ],
+  recall:[
+    "What is the purpose of IPSAS 33? Who must apply it?",
+    "Name 4 items that MAY be excluded in Year 1 of adoption",
+    "Name 4 items that MUST be recognised from Day 1 of adoption",
+    "How long is the transition period? What changes in each of the 3 years?",
+    "What 4 disclosures must a first-time adopter make in the transition period?",
+  ],
+  examTip:"🔥 IPSAS 33 Year 1 exclusions: PPE, Heritage assets, Social benefits, Defence assets (military equipment), Some GG investments. Day 1 must include: Cash, Borrowings, CRF balance.",
+},
+{
+  phase:"phase1",
+  topic:"IPSAS 33 — First-time Adoption",
+  focus:"Opening SoFP Preparation, Nigeria's Adoption Journey & Worked Examples",
+  ref:"Ch.24 · Sec 24.9 + Worked Examples",
+  hours:1,
+  method:"📖 Read examples (15 min) → 📝 Attempt all Ch.24 worked examples → 🔴 Mark each against model answer → Note every adjustment item",
+  subtopics:[
+    {text:"24.9 Preparing the Opening Statement of Financial Position at transition date",loc:"Ch.24"},
+    {text:"24.9 Adjustments to accumulated surplus on transition — how prior errors are treated",loc:"Ch.24"},
+    {text:"24.10 Comparative period — can be omitted in Year 1; requirements for Years 2-3",loc:"Ch.24"},
+    {text:"24.11 Nigeria's IPSAS adoption journey — where Nigeria stands on cash→accrual transition",loc:"Ch.24"},
+    {text:"24.11 Challenges of adopting IPSAS in Nigeria — infrastructure, capacity, political will",loc:"Ch.24"},
+    {text:"Worked example 1 — Prepare Opening SoFP for entity adopting IPSAS",loc:"Ch.24 worked examples"},
+    {text:"Worked example 2 — Identify which items can/cannot be excluded in Year 1",loc:"Ch.24 worked examples"},
+    {text:"Worked example 3 — Calculate net assets at transition date with given information",loc:"Ch.24 worked examples"},
+  ],
+  recall:[
+    "Prepare an Opening SoFP for a hypothetical government entity adopting accrual IPSAS for the first time",
+    "How are adjustments to net assets (accumulated surplus) made at transition?",
+    "Why is Nigeria still largely on cash basis IPSAS? State 3 reasons",
+    "How does IPSAS 33 handle the comparative period information in Year 1?",
+  ],
+  examTip:"🔥 IPSAS 33 questions = theory + short computation. Know the lists (must/may) and the Opening SoFP format. Nigeria is on CASH basis IPSAS. Nigeria's target: transition to accrual.",
+},
+{
+  phase:"phase1",
+  topic:"Accounting for Local Government",
+  focus:"LGA Structure, Constitutional Basis, Revenue Sources & JAAC",
+  ref:"Ch.22 · Sec 22.0–22.8",
+  hours:1,
+  method:"📖 Read Ch.22 Sec 22.0–22.8 (40 min) → 📝 Brain-dump all LGA revenue sources → Draw FAAC flow to LGA from memory → ✅ Check",
+  subtopics:[
+    {text:"22.2 Constitutional basis of LGAs — Third Schedule; 774 LGAs in Nigeria",loc:"Ch.22"},
+    {text:"22.3 Joint Account Allocation Committee (JAAC) — purpose, membership, function",loc:"Ch.22"},
+    {text:"22.3 JAAC legal basis — prohibition on state governments withholding LGA funds",loc:"Ch.22"},
+    {text:"22.4 Local Government Service Commission (LGSC) — roles, appointment powers",loc:"Ch.22"},
+    {text:"22.5 LGA revenue sources — Statutory allocation (FAAC), IGR, Grants",loc:"Ch.22"},
+    {text:"22.5 IGR at LGA level — rates, levies, market fees, vehicle permits, tenement rates",loc:"Ch.22"},
+    {text:"22.6 LGA budget process — similarities and differences from Federal budget process",loc:"Ch.22"},
+    {text:"22.7 Fund accounting at LGA — General Fund, Capital Development Fund",loc:"Ch.22"},
+    {text:"22.8 Financial Regulations for LGAs — key provisions; Treasurer's authority",loc:"Ch.22"},
+  ],
+  recall:[
+    "What is JAAC? Who manages it? What is its constitutional purpose?",
+    "List 6 sources of revenue for a Local Government Area",
+    "What percentage of FAAC goes to LGAs? How is it shared AMONG the 774 LGAs?",
+    "Can a state government withhold LGA funds? What is the legal position?",
+    "What is the role of the Local Government Service Commission?",
+  ],
+  examTip:"🔥 JAAC = Joint Account Allocation Committee. State governments CANNOT access LGA FAAC funds — Section 162(6) prohibits it. This is a classic exam question.",
+},
+{
+  phase:"phase1",
+  topic:"Accounting for Local Government",
+  focus:"LGA Financial Statements, Internal Controls & Worked Examples",
+  ref:"Ch.22 · Sec 22.9–22.17 + Worked Examples",
+  hours:1,
+  method:"📖 Read Ch.22 Sec 22.9–22.17 (30 min) → 📝 Prepare LGA R&P Account format → Attempt all LGA worked examples → ✅ Mark and review",
+  subtopics:[
+    {text:"22.9 Financial statements for LGAs — Receipts & Payments Account; Appropriation Account",loc:"Ch.22"},
+    {text:"22.10 Format of LGA financial statements — similar to State/Federal; scaled differently",loc:"Ch.22"},
+    {text:"22.11 LGA Treasurer — role, authority, reporting line",loc:"Ch.22"},
+    {text:"22.12 Audit Alarm Committee — what it is and its oversight role",loc:"Ch.22"},
+    {text:"22.13 Investment of LGA surplus funds — approved instruments; guidelines",loc:"Ch.22"},
+    {text:"22.14 Accountability failures in Nigerian LGAs — common issues and causes",loc:"Ch.22"},
+    {text:"22.15 LGA vs Federal FS comparison — 3 key differences",loc:"Ch.22"},
+    {text:"22.16 IPSAS applicability to LGAs — which standards apply",loc:"Ch.22"},
+    {text:"22.17 Chapter review — revisit key definitions and concepts",loc:"Ch.22"},
+    {text:"Worked examples — prepare LGA R&P Account from given transactions",loc:"Ch.22 worked examples"},
+  ],
+  recall:[
+    "Draw the format of a Local Government Receipts and Payments Account",
+    "What is the role of the Treasurer in LGA financial management?",
+    "How should surplus LGA funds be invested? State 3 permitted instruments",
+    "State 3 major accountability failures common in Nigerian LGAs",
+    "Compare LGA vs Federal Government FS — state 3 differences",
+  ],
+  examTip:"🔥 LGA FS follows the same cash-basis structure as Federal/State but is smaller in scale. The Treasurer = chief accounting officer at LGA level (equivalent to AGF at federal).",
+},
+{
+  phase:"phase1",
+  topic:"Transparency & Accountability in Public Sector",
+  focus:"Accountability Framework, IMF Code, OBI & Anti-Corruption Bodies",
+  ref:"Ch.12 · Sec 12.0–12.11",
+  hours:1,
+  method:"📖 Read Ch.12 fully (35 min) → 📝 Write the 4 IMF pillars from memory → List 5 factors against accountability in Nigeria → Make a mind map → ✅ Check",
+  subtopics:[
+    {text:"12.2 Introduction — define public accountability; vertical vs horizontal accountability",loc:"Ch.12"},
+    {text:"12.3 Concept of public accountability — who is accountable to whom and for what",loc:"Ch.12"},
+    {text:"12.4 Fiscal transparency — definition; why it matters for public trust",loc:"Ch.12"},
+    {text:"12.5 IMF Code of Good Practices on Fiscal Transparency — 4 pillars",loc:"Ch.12"},
+    {text:"12.5 Pillar 1 — Clarity of roles and responsibilities in government",loc:"Ch.12"},
+    {text:"12.5 Pillar 2 — Open budget processes; public participation",loc:"Ch.12"},
+    {text:"12.5 Pillar 3 — Public availability of information; timely fiscal reports",loc:"Ch.12"},
+    {text:"12.5 Pillar 4 — Assurances of integrity; independent audit",loc:"Ch.12"},
+    {text:"12.6 Transparency International — Corruption Perceptions Index (CPI); Nigeria's score",loc:"Ch.12"},
+    {text:"12.7 Open Budget Index (OBI) — what it measures; Nigeria's ranking",loc:"Ch.12"},
+    {text:"12.8 Conditions to enhance public accountability — state 5",loc:"Ch.12"},
+    {text:"12.9 Factors militating against accountability in Nigeria — state and explain 5",loc:"Ch.12"},
+    {text:"12.10 EFCC & ICPC — mandates, key difference (EFCC = economic crimes; ICPC = corruption)",loc:"Ch.12"},
+    {text:"12.11 Chapter review + Worked examples",loc:"Ch.12"},
+  ],
+  recall:[
+    "Define public accountability. Distinguish vertical from horizontal accountability",
+    "State the 4 pillars of the IMF Code of Good Practices on Fiscal Transparency",
+    "What does the Open Budget Index measure? What scores indicate?",
+    "State 5 conditions necessary for effective public accountability in Nigeria",
+    "State 5 factors that militate against public accountability in Nigeria",
+  ],
+  examTip:"🔥 IMF 4 pillars = (1) Clarity of roles (2) Open budget process (3) Public availability of info (4) Assurances of integrity. Memorise these exactly. Always cite 'IMF Code' not just 'IMF'.",
+},
+{
+  phase:"phase1",
+  topic:"PHASE 1 FULL REVIEW + MOCK SESSION",
+  focus:"Comprehensive Active Recall — All Public Sector Core Topics",
+  ref:"Ch.11 · Ch.12 · Ch.14 · Ch.15 · Ch.18 · Ch.21 · Ch.22 · Ch.23 · Ch.24 · Ch.28",
+  hours:2,
+  method:"⏱️ MOCK CONDITIONS — 2 hours, no notes, no phone. Attempt all questions. Mark strictly after. Record score.",
+  subtopics:[
+    {text:"MOCK Q1 (20 marks): Prepare full accrual-basis FS set from adjusted trial balance",loc:"Ch.23"},
+    {text:"MOCK Q2 (15 marks): Cash budget preparation + variance analysis",loc:"Ch.11"},
+    {text:"MOCK Q3 (10 marks): IPSAS 33 — identify year 1 exemptions and prepare opening SoFP",loc:"Ch.24"},
+    {text:"MOCK Q4 (10 marks): LGA accounting — prepare receipts and payments account",loc:"Ch.22"},
+    {text:"MOCK Q5 (10 marks): Fiscal transparency — IMF 4 pillars + accountability factors",loc:"Ch.12"},
+    {text:"MOCK Q6 (5 marks): IPSAS 24 — budget comparison presentation",loc:"Ch.28"},
+    {text:"Post-mock analysis — log every lost mark and reason",loc:"All"},
+    {text:"Identify your 3 weakest topics from mock — these are your revision targets",loc:"All"},
+  ],
+  recall:[
+    "After mock: which 3 topics cost you the most marks?",
+    "Were the losses from format errors, knowledge gaps, or calculation mistakes?",
+    "Set specific actions: what will you do about each weak area?",
+  ],
+  examTip:"🔥 Mock score today ≠ exam score. It is DIAGNOSTIC DATA. Use it to direct the next 30 days. A poor mock now + correct action = a good exam score in May.",
+},
+// ─── PHASE 2: PUBLIC FINANCE CORE ─────────────────────────────────────
+{
+  phase:"phase2",
+  topic:"Public Revenue",
+  focus:"Taxation Theory: Canons, Classification & Nigerian Tax Structure",
+  ref:"Ch.34 · Sec 34.0–34.8",
+  hours:1,
+  method:"📖 Read Ch.34 Sec 34.0–34.8 (40 min) → 📝 Brain-dump Adam Smith's 4 canons with examples → Draw tax classification diagram → ✅ Check",
+  subtopics:[
+    {text:"34.2 Definition of public revenue — all income to government from all sources",loc:"Ch.34"},
+    {text:"34.3 Reasons for public revenue — public goods, redistribution, regulation, stabilisation",loc:"Ch.34"},
+    {text:"34.4 Adam Smith's Canons of Taxation — Equity, Certainty, Convenience, Economy",loc:"Ch.34"},
+    {text:"34.4 Additional (modern) canons — Simplicity, Productivity, Flexibility, Neutrality",loc:"Ch.34"},
+    {text:"34.5 Classification of taxes — Direct vs Indirect; Progressive vs Regressive vs Proportional",loc:"Ch.34"},
+    {text:"34.5 Tax burden — incidence (who bears it) vs impact (who pays it initially)",loc:"Ch.34"},
+    {text:"34.6 Tax shifting — forward shifting (to consumers), backward shifting (to suppliers)",loc:"Ch.34"},
+    {text:"34.7 Public goods — definition; non-excludability, non-rivalry; market failure",loc:"Ch.34"},
+    {text:"34.8 Nigerian tax structure — overview: CIT, PAYE, VAT, CGT, PPT, Stamp Duties",loc:"Ch.34"},
+  ],
+  recall:[
+    "State and explain Adam Smith's 4 canons of taxation (with an example for each)",
+    "Distinguish progressive, regressive, and proportional taxes with numerical examples",
+    "What is the difference between tax impact and tax incidence?",
+    "Name 6 taxes in Nigeria and the authority that administers each",
+    "What are public goods? Why cannot the free market provide them efficiently?",
+  ],
+  examTip:"🔥 Canons of taxation: 'State and explain 4 canons' = give Adam Smith's 4 + example for each. ALWAYS give examples. Examiners award marks for examples.",
+},
+{
+  phase:"phase2",
+  topic:"Public Revenue",
+  focus:"Revenue Allocation, RMAFC, Non-Tax Revenue & Challenges",
+  ref:"Ch.34 · Sec 34.9–34.20",
+  hours:1,
+  method:"📖 Read Ch.34 Sec 34.9–34.20 (35 min) → 📝 Draw Nigerian revenue allocation flowchart → List RMAFC 5 functions → ✅ Check → Attempt worked examples",
+  subtopics:[
+    {text:"34.9 Revenue allocation in Nigeria — historical evolution since 1946",loc:"Ch.34"},
+    {text:"34.10 Vertical revenue sharing — FG 52.68%, States 26.72%, LGAs 20.60%",loc:"Ch.34"},
+    {text:"34.11 RMAFC — Revenue Mobilisation Allocation and Fiscal Commission: mandate",loc:"Ch.34"},
+    {text:"34.11 RMAFC composition — federal and state representatives",loc:"Ch.34"},
+    {text:"34.11 RMAFC functions — recommend sharing formula, monitor accruals, revenue mobilisation",loc:"Ch.34"},
+    {text:"34.12 Horizontal sharing among states — equality (40%), population (30%), social development (10%), landmass (10%), IGR effort (10%)",loc:"Ch.34"},
+    {text:"34.13 Non-tax revenue — fines, fees, rents, royalties, licence, dividends",loc:"Ch.34"},
+    {text:"34.14 Oil vs non-oil revenue — FIRS non-oil revenue targets; customs performance",loc:"Ch.34"},
+    {text:"34.15 Challenges of revenue generation in Nigeria — state and explain 5",loc:"Ch.34"},
+    {text:"34.16 Chapter review + worked examples — FAAC allocation calculations",loc:"Ch.34"},
+  ],
+  recall:[
+    "State the current vertical revenue sharing formula (exact percentages for all 3 tiers)",
+    "What are the 5 criteria for horizontal revenue sharing among states? State percentages",
+    "What is RMAFC? State 5 of its functions",
+    "Name 4 challenges of public revenue generation in Nigeria",
+    "Calculate: if FAAC distributes ₦800bn, and derivation has been applied, how much goes to states?",
+  ],
+  examTip:"🔥 Horizontal sharing: Equality 40%, Population 30%, Social Development 10%, Land Mass 10%, IGR Effort 10%. These percentages appear in BOTH calculations AND theory answers.",
+},
+{
+  phase:"phase2",
+  topic:"Public Expenditure",
+  focus:"Classification, Theories of Growth & Transfer Payments",
+  ref:"Ch.35 · Sec 35.0–35.8",
+  hours:1,
+  method:"📖 Read Ch.35 Sec 35.0–35.8 (35 min) → 📝 Brain-dump 3 classification methods with examples → State Wagner's Law → ✅ Check",
+  subtopics:[
+    {text:"35.2 Definition and importance of public expenditure",loc:"Ch.35"},
+    {text:"35.3 Functional classification — defence, education, health, infrastructure, social services",loc:"Ch.35"},
+    {text:"35.3 Economic classification — capital expenditure, recurrent expenditure, transfer payments",loc:"Ch.35"},
+    {text:"35.3 Administrative classification — by MDA (Ministry, Department, Agency)",loc:"Ch.35"},
+    {text:"35.4 Capital vs Recurrent expenditure — key distinction; examples; budget treatment",loc:"Ch.35"},
+    {text:"35.5 Transfer payments — pensions, subsidies, grants to states; NOT in GDP",loc:"Ch.35"},
+    {text:"35.6 Wagner's Law — as national income grows, govt expenditure grows proportionally faster",loc:"Ch.35"},
+    {text:"35.6 Wagner's 3 reasons — administrative/protective, cultural/welfare, economic functions",loc:"Ch.35"},
+    {text:"35.7 Peacock-Wiseman Hypothesis — displacement effect; ratchet effect during crises",loc:"Ch.35"},
+    {text:"35.8 Expenditure multiplier — Keynesian; government spending → increased national income",loc:"Ch.35"},
+  ],
+  recall:[
+    "Classify 8 government expenditure items using the economic classification",
+    "What is Wagner's Law? State the 3 reasons Wagner gave for rising expenditure",
+    "Explain the Peacock-Wiseman displacement effect — what happens after a war?",
+    "What is a transfer payment? State 3 examples. Are they included in GDP?",
+    "Explain the Keynesian expenditure multiplier — how does government spending affect national income?",
+  ],
+  examTip:"🔥 Wagner's Law = 'As economy develops, the public sector grows even faster.' Peacock-Wiseman = crises cause expenditure to ratchet up and NEVER return to pre-crisis levels.",
+},
+{
+  phase:"phase2",
+  topic:"Public Expenditure",
+  focus:"MTEF, Expenditure Control, Value for Money & Worked Examples",
+  ref:"Ch.35 · Sec 35.9–35.18",
+  hours:1,
+  method:"📖 Read Ch.35 Sec 35.9–35.18 (30 min) → 📝 Explain MTEF in your own words → Define the 3 Es → Attempt worked examples → ✅ Check",
+  subtopics:[
+    {text:"35.9 Medium-Term Expenditure Framework (MTEF) — definition; 3-year rolling horizon",loc:"Ch.35"},
+    {text:"35.9 MTEF components — MTSS (Medium-Term Sector Strategy), Fiscal Strategy Paper",loc:"Ch.35"},
+    {text:"35.10 Fiscal Strategy Paper (FSP) — what it must contain; legal basis in FRA",loc:"Ch.35"},
+    {text:"35.11 Expenditure control mechanisms — commitment control; release system; virement",loc:"Ch.35"},
+    {text:"35.12 Challenges of controlling public expenditure in Nigeria — state 5",loc:"Ch.35"},
+    {text:"35.13 Value for Money (VFM) auditing — definition and purpose",loc:"Ch.35"},
+    {text:"35.13 The 3 Es of VFM — Economy (cheapest input), Efficiency (input/output ratio), Effectiveness (objectives met)",loc:"Ch.35"},
+    {text:"35.14 Performance indicators in public expenditure — output vs outcome measures",loc:"Ch.35"},
+    {text:"35.15 Chapter review — revisit key definitions and frameworks",loc:"Ch.35"},
+    {text:"Worked examples — classify expenditures; MTEF analysis questions",loc:"Ch.35 worked examples"},
+  ],
+  recall:[
+    "What is MTEF? State its 3-year components and what each covers",
+    "What must a Fiscal Strategy Paper contain? State 5 elements",
+    "Define Value for Money auditing. State the 3 Es with examples for each",
+    "State 4 challenges of public expenditure control in Nigeria",
+    "What is the difference between an output measure and an outcome measure in VFM?",
+  ],
+  examTip:"🔥 3 Es of VFM = Economy (buy cheaply), Efficiency (best use of what you bought), Effectiveness (achieved the objective). A favourite 3-mark question. Give examples for each E.",
+},
+{
+  phase:"phase2",
+  topic:"Public Debt",
+  focus:"Types of Debt, DMO, Debt Instruments & Borrowing Rationale",
+  ref:"Ch.36 · Sec 36.0–36.8",
+  hours:1,
+  method:"📖 Read Ch.36 Sec 36.0–36.8 (35 min) → 📝 Draw mind map of all debt types and instruments → State 5 DMO functions → ✅ Check",
+  subtopics:[
+    {text:"36.2 Definition of public debt — total government borrowings outstanding",loc:"Ch.36"},
+    {text:"36.3 Classification — Internal (domestic) vs External debt; voluntary vs compulsory",loc:"Ch.36"},
+    {text:"36.3 Tenor classification — Short-term (T-Bills, <1yr), Medium-term (2-10yr), Long-term (>10yr bonds)",loc:"Ch.36"},
+    {text:"36.4 Debt instruments — Treasury Bills (T-Bills), FGN Bonds, Eurobonds, Promissory Notes",loc:"Ch.36"},
+    {text:"36.4 Sukuk bonds — Islamic finance; infrastructure-backed in Nigeria",loc:"Ch.36"},
+    {text:"36.5 Debt Management Office (DMO) — established 2000; mandate and composition",loc:"Ch.36"},
+    {text:"36.5 DMO functions — issue FGN securities, maintain debt records, advise on debt strategy",loc:"Ch.36"},
+    {text:"36.6 Reasons for public borrowing — Keynesian case; crowding-out argument against",loc:"Ch.36"},
+    {text:"36.7 Nigeria's creditors — World Bank (IDA/IBRD), ADB, IMF, China Exim Bank, Eurobond holders",loc:"Ch.36"},
+    {text:"36.8 Composition of Nigeria's debt — domestic vs external; current profile",loc:"Ch.36"},
+  ],
+  recall:[
+    "Classify 6 debt instruments by type and tenor",
+    "State 6 functions of the Debt Management Office (DMO)",
+    "What is the difference between internal and external debt? Give 2 examples of each",
+    "What is a Eurobond? How and why does Nigeria issue Eurobonds?",
+    "What is the Keynesian argument for government borrowing? What is the crowding-out counter-argument?",
+  ],
+  examTip:"🔥 DMO was established by the DMO Establishment Act 2003 (operations began 2000). It is SEPARATE from the Ministry of Finance. Must know its 6 key functions.",
+},
+{
+  phase:"phase2",
+  topic:"Public Debt",
+  focus:"Debt Sustainability, Redemption Methods, Debt Relief & Effects",
+  ref:"Ch.36 · Sec 36.9–36.18",
+  hours:1,
+  method:"📖 Read Ch.36 Sec 36.9–36.18 (30 min) → 📝 Explain sinking fund in your own words → List debt redemption methods → Attempt worked examples → ✅ Check",
+  subtopics:[
+    {text:"36.9 Debt sustainability — Debt/GDP ratio; Debt Service Ratio (DSR)",loc:"Ch.36"},
+    {text:"36.9 DSR formula — (Total Debt Service / Revenue or Export Earnings) × 100",loc:"Ch.36"},
+    {text:"36.10 IMF/World Bank debt sustainability benchmarks — DSR >15% = warning",loc:"Ch.36"},
+    {text:"36.11 Methods of debt redemption — Sinking Fund, Refunding, Conversion, Repudiation",loc:"Ch.36"},
+    {text:"36.11 Sinking Fund — annual contribution accumulates to repay debt at maturity",loc:"Ch.36"},
+    {text:"36.11 Refunding — new debt issued to repay old debt; roll-over",loc:"Ch.36"},
+    {text:"36.11 Conversion — change interest rate or tenure of existing debt",loc:"Ch.36"},
+    {text:"36.12 Debt relief — HIPC Initiative, Paris Club, London Club, Brady Bonds",loc:"Ch.36"},
+    {text:"36.13 Nigeria's 2005 Paris Club deal — $18bn written off; $12bn paid; significance",loc:"Ch.36"},
+    {text:"36.14 Negative effects of excessive public debt on the economy — state and explain 5",loc:"Ch.36"},
+    {text:"36.15 Chapter review + worked examples — DSR calculations, sinking fund computation",loc:"Ch.36"},
+  ],
+  recall:[
+    "What is a sinking fund? How does it work mechanically to redeem debt?",
+    "State the DSR formula. At what level does the DSR signal unsustainability?",
+    "State 4 methods of debt redemption — define each briefly",
+    "What was the 2005 Paris Club deal? State the amounts and significance for Nigeria",
+    "State 4 negative economic effects of excessive public debt",
+  ],
+  examTip:"🔥 Sinking Fund = entity makes annual payments to a fund; interest accumulates; fund pays off debt at maturity. DSR = (Debt Service ÷ Revenue) × 100%. Red flag at 15%+.",
+},
+{
+  phase:"phase2",
+  topic:"Fiscal Federalism (Nigeria-focused)",
+  focus:"Concept, Nigerian Structure, Revenue Sharing & Derivation Principle",
+  ref:"Ch.37 · Sec 37.0–37.10",
+  hours:1,
+  method:"📖 Read Ch.37 Sec 37.0–37.10 (40 min) → 📝 Draw complete revenue allocation flowchart → Memorise all sharing percentages → ✅ Check",
+  subtopics:[
+    {text:"37.2 Fiscal federalism — definition; division of revenue/expenditure powers between tiers",loc:"Ch.37"},
+    {text:"37.2 Oates Decentralisation Theorem — why fiscal decentralisation can improve efficiency",loc:"Ch.37"},
+    {text:"37.3 Nigerian 3-tier federal structure — FG, 36 States, 774 LGAs",loc:"Ch.37"},
+    {text:"37.4 Constitutional allocation of revenue — Section 162 (Federation Account), Section 163",loc:"Ch.37"},
+    {text:"37.5 Vertical revenue sharing — FG 52.68%, States 26.72%, LGAs 20.60%",loc:"Ch.37"},
+    {text:"37.6 Special funds — deducted BEFORE 3-tier sharing: Ecology, Stabilisation, NRDF",loc:"Ch.37"},
+    {text:"37.7 Horizontal sharing among states — 5 criteria with exact percentages",loc:"Ch.37"},
+    {text:"37.8 Derivation principle — 13% of mineral revenue to producing states",loc:"Ch.37"},
+    {text:"37.9 Constitutional basis of derivation — Section 162(2); which states benefit most",loc:"Ch.37"},
+    {text:"37.10 RMAFC role — recommends sharing formula; no binding power",loc:"Ch.37"},
+  ],
+  recall:[
+    "What is fiscal federalism? State 3 benefits of fiscal decentralisation",
+    "State ALL sharing criteria for horizontal revenue sharing — exact percentages",
+    "What is the derivation principle? State its constitutional basis",
+    "Which Nigerian states benefit most from the derivation principle? Why?",
+    "What are the special funds deducted before 3-tier sharing? Name 3",
+  ],
+  examTip:"🔥 Horizontal: Equality 40%, Population 30%, Social Development 10%, Land Mass 10%, IGR Effort 10%. TOTAL = 100%. Special funds come FIRST, THEN the 3-tier sharing begins.",
+},
+{
+  phase:"phase2",
+  topic:"Fiscal Federalism (Nigeria-focused)",
+  focus:"JAAC, Intergovernmental Transfers, Excess Crude Account & Challenges",
+  ref:"Ch.37 · Sec 37.11–37.20",
+  hours:1,
+  method:"📖 Read Ch.37 Sec 37.11–37.20 (30 min) → 📝 List 5 challenges of fiscal federalism → Explain JAAC → ✅ Check → Attempt worked examples",
+  subtopics:[
+    {text:"37.11 Intergovernmental transfers — equalization grants, specific grants, block grants",loc:"Ch.37"},
+    {text:"37.12 JAAC — Joint Account Allocation Committee; composition, how it allocates LGA funds",loc:"Ch.37"},
+    {text:"37.13 State IGR performance — challenges of state-level revenue generation",loc:"Ch.37"},
+    {text:"37.14 Excess Crude Account (ECA) — not constitutional; executive arrangement; controversy",loc:"Ch.37"},
+    {text:"37.15 Nigeria Sovereign Investment Authority (NSIA) — established 2011; 3 funds",loc:"Ch.37"},
+    {text:"37.15 NSWF's 3 funds — Future Generations Fund, Infrastructure Fund, Stabilisation Fund",loc:"Ch.37"},
+    {text:"37.16 Challenges of fiscal federalism in Nigeria — political, structural, capacity issues",loc:"Ch.37"},
+    {text:"37.17 Reforms needed in Nigeria's fiscal federalism — devolution, IGR reform",loc:"Ch.37"},
+    {text:"37.18 Chapter review + worked examples — revenue allocation calculations",loc:"Ch.37"},
+  ],
+  recall:[
+    "Distinguish between equalization grants, specific grants, and block grants",
+    "How is JAAC constituted? What does it do with LGA FAAC allocations?",
+    "What is the Excess Crude Account? Why is it constitutionally controversial?",
+    "What are the 3 funds under NSIA/NSWF and the purpose of each?",
+    "State 5 challenges of fiscal federalism in Nigeria",
+  ],
+  examTip:"🔥 ECA (Excess Crude Account) is NOT constitutional — it is managed by executive agreement between FG and states. NSIA was established by law in 2011. Know this distinction.",
+},
+{
+  phase:"phase2",
+  topic:"Public Finance Management & Accountability",
+  focus:"PFM Framework, TSA, GIFMIS & Digital Finance Systems",
+  ref:"Ch.40 · Sec 40.0–40.10 + Ch.8",
+  hours:1,
+  method:"📖 Read Ch.40 Sec 40.0–40.10 + Ch.8 (40 min) → 📝 For each system: purpose + 3 benefits table → ✅ Check",
+  subtopics:[
+    {text:"40.2 Public Finance Management (PFM) — definition; the PFM cycle (planning → execution → audit)",loc:"Ch.40"},
+    {text:"40.3 Treasury Single Account (TSA) — definition; all govt revenues swept to CBN account",loc:"Ch.40"},
+    {text:"40.3 TSA benefits — eliminates float, reduces borrowing cost, improves cash management",loc:"Ch.40"},
+    {text:"40.3 TSA implementation in Nigeria — 2015 introduction; CBN role",loc:"Ch.40"},
+    {text:"Ch.8: GIFMIS — Govt Integrated Financial Management Info System; modules: budgeting, accounts, procurement",loc:"Ch.8"},
+    {text:"Ch.8: IPPIS — Integrated Personnel and Payroll Information System; eliminates ghost workers",loc:"Ch.8"},
+    {text:"Ch.8: ATRRS — Automated Accounting Transaction Recording and Reporting System",loc:"Ch.8"},
+    {text:"Ch.8: UTAS — University Transparency and Accountability Solution; why universities resisted",loc:"Ch.8"},
+    {text:"Ch.8: Open Treasury Portal — real-time public access to government expenditure data",loc:"Ch.8"},
+  ],
+  recall:[
+    "What is the TSA? What specific problem does it solve in government finance?",
+    "State 5 benefits of the Treasury Single Account",
+    "Explain GIFMIS. What are its main functional modules?",
+    "What is IPPIS? How has it addressed the ghost workers problem?",
+    "Why did some universities resist UTAS? What were their stated concerns?",
+  ],
+  examTip:"🔥 TSA: All government revenue accounts consolidated at CBN. Introduced in Nigeria in 2015. Eliminated thousands of disparate MDA bank accounts. Know: what it does, not just what it is.",
+},
+{
+  phase:"phase2",
+  topic:"Public Finance Management & Accountability",
+  focus:"Fiscal Responsibility Act 2007, Budget Office & Parliamentary Oversight",
+  ref:"Ch.40 · Sec 40.11–40.20 + Ch.2",
+  hours:1,
+  method:"📖 Read Ch.40 Sec 40.11+ and Ch.2 (35 min) → 📝 State 5 key FRA provisions → Explain PAC process → ✅ Check → Practice theory answer",
+  subtopics:[
+    {text:"40.11 Fiscal Responsibility Act (FRA) 2007 — purpose and key provisions",loc:"Ch.40"},
+    {text:"40.11 FRA s.12 — Aggregate Expenditure Ceiling; how set; who enforces",loc:"Ch.40"},
+    {text:"40.11 FRA s.13 — Savings; surplus to be saved in specific fund",loc:"Ch.40"},
+    {text:"40.11 FRA s.27 — Medium-term fiscal strategy; annual rolling basis",loc:"Ch.40"},
+    {text:"40.11 FRA s.41 — Penalties for non-compliance; criminal sanctions",loc:"Ch.40"},
+    {text:"40.12 Budget Office of the Federation (BOF) — role, relationship to Ministry of Finance",loc:"Ch.40"},
+    {text:"40.13 Public Accounts Committee (PAC) — NASS oversight body; how it works",loc:"Ch.40"},
+    {text:"40.13 PAC powers — summon MDAs, query AGF reports, refer to EFCC",loc:"Ch.40"},
+    {text:"Ch.2 — Towards National Fiscal Responsibility: MTEF legal basis; aggregate ceiling process",loc:"Ch.2"},
+    {text:"Ch.2 — Monitoring of budget implementation; MTEF risks",loc:"Ch.2"},
+    {text:"40.14 Chapter review + worked examples",loc:"Ch.40"},
+  ],
+  recall:[
+    "State 5 key provisions of the Fiscal Responsibility Act 2007",
+    "What is the Aggregate Expenditure Ceiling? How is it determined? Who enforces it?",
+    "What are the powers of the Public Accounts Committee? State 4",
+    "What is the role of the Budget Office of the Federation?",
+    "State 3 possible sanctions under the Fiscal Responsibility Act 2007",
+  ],
+  examTip:"🔥 FRA 2007 requires: (1) MTEF preparation, (2) Aggregate expenditure ceiling, (3) Deficit limit, (4) Debt ceiling, (5) Publication of fiscal strategy paper. Know these 5.",
+},
+{
+  phase:"phase2",
+  topic:"PHASE 2 FULL REVIEW + MOCK SESSION",
+  focus:"Comprehensive Active Recall — All Public Finance Core Topics",
+  ref:"Ch.34 · Ch.35 · Ch.36 · Ch.37 · Ch.40",
+  hours:2,
+  method:"⏱️ MOCK CONDITIONS — 2 hours, no notes. Attempt all questions. Mark after. Record score.",
+  subtopics:[
+    {text:"MOCK Q1 (20 marks): Revenue allocation — compute state shares; derivation fund; RMAFC role",loc:"Ch.34 + Ch.37"},
+    {text:"MOCK Q2 (15 marks): Public debt — classify 6 instruments; compute DSR; state DMO functions",loc:"Ch.36"},
+    {text:"MOCK Q3 (15 marks): Fiscal federalism — horizontal sharing criteria essay",loc:"Ch.37"},
+    {text:"MOCK Q4 (10 marks): Canons of taxation + classify 6 given taxes with justification",loc:"Ch.34"},
+    {text:"MOCK Q5 (10 marks): Public expenditure — Wagner's Law + MTEF + 3 Es of VFM",loc:"Ch.35"},
+    {text:"MOCK Q6 (5 marks): PFM — TSA and GIFMIS benefits",loc:"Ch.40 + Ch.8"},
+    {text:"MOCK Q7 (5 marks): State 5 provisions of FRA 2007",loc:"Ch.40"},
+    {text:"Post-mock analysis — identify Phase 2 weak areas",loc:"All"},
+  ],
+  recall:[
+    "Combined score across Phase 1 and Phase 2 mocks: where are you?",
+    "Which single topic is costing you the most marks?",
+    "Set a targeted remediation plan for that topic before Phase 3 begins",
+  ],
+  examTip:"🔥 Revenue allocation calculations: Separate derivation (13% of oil revenue first). Then apply 3-tier formula. Then apply horizontal criteria for state shares. Step by step.",
+},
+// ─── PHASE 3: SECOND-TIER TOPICS ─────────────────────────────────────
+{
+  phase:"phase3",
+  topic:"Financial Responsibilities of Public Sector Officers",
+  focus:"Accounting Officers, AuGF, OAGF, Sub-Accounting Officers & Surcharge",
+  ref:"Ch.13 · Sec 13.0–13.12",
+  hours:1,
+  method:"📖 Read Ch.13 fully (40 min) → 📝 Compare AGF vs AuGF vs Accounting Officer roles in 3-column table → ✅ Check",
+  subtopics:[
+    {text:"13.2 Introduction — who are public sector officers accountable for government funds?",loc:"Ch.13"},
+    {text:"13.3 Accountant-General of the Federation (AGF) — appointment, powers, 6 key duties",loc:"Ch.13"},
+    {text:"13.4 Auditor-General for the Federation (AuGF) — appointment, s.85-86 constitutional powers",loc:"Ch.13"},
+    {text:"13.5 Accounting Officers — Permanent Secretaries/HoAs; personal liability for financial management",loc:"Ch.13"},
+    {text:"13.5 Responsibilities of Accounting Officers — 6 key duties including surcharge authority",loc:"Ch.13"},
+    {text:"13.6 Sub-accounting officers — delegation chain; authority limits",loc:"Ch.13"},
+    {text:"13.7 Advance fee fraud — how it affects public officers; criminal liability",loc:"Ch.13"},
+    {text:"13.8 Surcharge — definition; when can an officer be surcharged; appeal process",loc:"Ch.13"},
+    {text:"13.9 Loss of government funds — procedure; write-off authority limits",loc:"Ch.13"},
+    {text:"13.10 Financial irregularities — types; how they are detected and reported",loc:"Ch.13"},
+    {text:"13.11 Treasury investigations — process and outcomes",loc:"Ch.13"},
+    {text:"13.12 Chapter review + worked examples",loc:"Ch.13"},
+  ],
+  recall:[
+    "State 6 responsibilities of an Accounting Officer (Permanent Secretary) in government",
+    "What is surcharge? Under what 3 conditions can an officer be surcharged?",
+    "How does an accounting officer appeal against a surcharge decision?",
+    "What is the delegation chain from AGF to sub-accounting officer?",
+    "What procedure must be followed when government funds are lost?",
+  ],
+  examTip:"🔥 Accounting Officer = Permanent Secretary of the MDA. They are PERSONALLY liable for financial irregularities. Surcharge = making an officer personally repay government money lost through negligence.",
+},
+{
+  phase:"phase3",
+  topic:"Advances",
+  focus:"Types of Advances, Imprest System, Advance Ledger & Retirement",
+  ref:"Ch.17 · Sec 17.0–17.12",
+  hours:1,
+  method:"📖 Read Ch.17 fully (35 min) → 📝 Distinguish imprest types in own words → Draw advance retirement procedure → ✅ Check → Attempt worked examples",
+  subtopics:[
+    {text:"17.2 Definition of advances in government — monies paid for specific purpose, repayable",loc:"Ch.17"},
+    {text:"17.3 Types of advances — Personal advances, Motor vehicle, Housing, Imprest",loc:"Ch.17"},
+    {text:"17.4 Imprest system — petty cash imprest vs standing imprest; how each works",loc:"Ch.17"},
+    {text:"17.4 Petty cash imprest — small fixed amount; reimbursed when spent; float is constant",loc:"Ch.17"},
+    {text:"17.4 Standing imprest — larger advance for specific recurring expenditures",loc:"Ch.17"},
+    {text:"17.5 Advance ledger — format; each advance has a ledger account",loc:"Ch.17"},
+    {text:"17.6 Retirement of advances — process; supporting documents required",loc:"Ch.17"},
+    {text:"17.7 Un-retired advances — treatment at year-end; write-off procedures",loc:"Ch.17"},
+    {text:"17.8 Controlling advances — monitoring; recovery from salary if not retired",loc:"Ch.17"},
+    {text:"17.9 Advances in Monthly Transcript — memorandum items; not expenditure",loc:"Ch.17"},
+    {text:"17.10 PSASS 49 — Retirement Benefit Plans; defined contribution vs defined benefit",loc:"Ch.17 + sec 7.5"},
+    {text:"17.11 Chapter review + worked examples",loc:"Ch.17"},
+  ],
+  recall:[
+    "State 4 types of advances in government and how each differs",
+    "Distinguish petty cash imprest from standing imprest — how each works mechanically",
+    "What is the procedure for retiring a personal advance? What documents are required?",
+    "How are un-retired advances treated at year-end in the accounts?",
+    "How are advances shown in the Monthly Transcript? Why aren't they expenditure?",
+  ],
+  examTip:"🔥 Imprest = money advanced to an officer for petty expenditures. REIMBURSED (not spent again from scratch) — the float stays constant. Advances ≠ expenditure until retired.",
+},
+{
+  phase:"phase3",
+  topic:"Ethical Issues in Public Sector Accounting",
+  focus:"ICAN Code of Ethics, EFCC, ICPC & Whistleblower Policy",
+  ref:"Ch.3 · Sec 3.0–3.12",
+  hours:1,
+  method:"📖 Read Ch.3 fully (35 min) → 📝 State OPICT principles → Compare EFCC vs ICPC mandates in 2 columns → ✅ Check",
+  subtopics:[
+    {text:"3.2 Introduction — importance of ethics in public sector accounting",loc:"Ch.3"},
+    {text:"3.3 Economic and Financial Crimes Commission (EFCC) — establishment, mandate",loc:"Ch.3"},
+    {text:"3.3 EFCC powers — arrest, investigate, prosecute economic & financial crimes",loc:"Ch.3"},
+    {text:"3.4 ICAN Code of Ethics — fundamental principles: OPICT",loc:"Ch.3"},
+    {text:"3.4 Objectivity — free from bias, conflict of interest, undue influence",loc:"Ch.3"},
+    {text:"3.4 Professional competence and due care — keep knowledge current; act diligently",loc:"Ch.3"},
+    {text:"3.4 Integrity — straightforward, honest, truthful in all professional dealings",loc:"Ch.3"},
+    {text:"3.4 Confidentiality — do not disclose without proper authority; use for own benefit",loc:"Ch.3"},
+    {text:"3.4 Technical standards — comply with all relevant laws, standards, regulations",loc:"Ch.3"},
+    {text:"3.5 ICPC — Independent Corrupt Practices and Other Related Offences Commission",loc:"Ch.3"},
+    {text:"3.5 ICPC vs EFCC — ICPC = corruption prevention focus; EFCC = economic crimes",loc:"Ch.3"},
+    {text:"3.6 Whistleblower policy — FMFBNP policy 2016; protections for whistleblowers",loc:"Ch.3"},
+    {text:"3.7 Ethical dilemmas in public sector — conflict of interest; bribery; nepotism",loc:"Ch.3"},
+    {text:"3.8 Chapter review + worked examples",loc:"Ch.3"},
+  ],
+  recall:[
+    "State the 5 fundamental principles of the ICAN Code of Ethics (OPICT) with a brief definition for each",
+    "What is the mandate of EFCC? Name 3 types of offences it investigates",
+    "What is the mandate of ICPC? State 2 key differences between EFCC and ICPC",
+    "What is the government's Whistleblower Policy? State 3 protections it provides",
+    "Give 3 examples of ethical dilemmas a public sector accountant may face",
+  ],
+  examTip:"🔥 OPICT = Objectivity, Professional competence, Integrity, Confidentiality, Technical standards. Very common as a 5-mark question: 'State the fundamental principles of professional ethics.'",
+},
+{
+  phase:"phase3",
+  topic:"Inventory & Stores Accounting",
+  focus:"Stores Accounting System, Ledger, Stocktaking & Procurement",
+  ref:"Ch.19 · Sec 19.0–19.14",
+  hours:1,
+  method:"📖 Read Ch.19 fully (35 min) → 📝 Draw stores ledger card format → Explain stocktaking procedures → ✅ Check → Attempt worked examples",
+  subtopics:[
+    {text:"19.2 Introduction — importance of stores accounting in government",loc:"Ch.19"},
+    {text:"19.3 Stores accounting system — purpose; what is recorded and why",loc:"Ch.19"},
+    {text:"19.4 Store ledger card (bin card) — format; receipts, issues, balance columns",loc:"Ch.19"},
+    {text:"19.5 Valuation of stores — FIFO, Weighted Average Cost; government standard",loc:"Ch.19"},
+    {text:"19.6 Stocktaking — periodic vs perpetual inventory; procedures",loc:"Ch.19"},
+    {text:"19.6 Stocktaking committee — composition; stock count procedure",loc:"Ch.19"},
+    {text:"19.7 Stores procurement — procurement plan; tender boards; Local Purchase Order (LPO)",loc:"Ch.19"},
+    {text:"19.8 LPO — definition; when raised; approval thresholds",loc:"Ch.19"},
+    {text:"19.9 Stores disposal — obsolete/unserviceable stores; Board of Survey",loc:"Ch.19"},
+    {text:"19.10 Internal controls over stores — segregation of duties; access controls",loc:"Ch.19"},
+    {text:"19.11 Losses from stores — reporting; write-off procedures",loc:"Ch.19"},
+    {text:"19.12 Chapter review + worked examples",loc:"Ch.19"},
+  ],
+  recall:[
+    "Draw the format of a stores ledger card (all columns)",
+    "What is the difference between periodic and perpetual stocktaking?",
+    "What is an LPO? When is it raised and who approves it?",
+    "What is a Board of Survey? When is it convened?",
+    "State 3 internal controls that should exist over a government stores function",
+  ],
+  examTip:"🔥 Stores ledger = Bin Card: Date | Description | Receipts (Qty/Value) | Issues (Qty/Value) | Balance (Qty/Value). Government typically uses Weighted Average Cost for valuation.",
+},
+{
+  phase:"phase3",
+  topic:"Cash Management & Borrowing Guidelines",
+  focus:"Government Cash Management, TSA, Ways & Means & Short-Term Borrowing",
+  ref:"Ch.20 · Sec 20.0–20.12",
+  hours:1,
+  method:"📖 Read Ch.20 fully (30 min) → 📝 State 5 cash management objectives → Explain Ways & Means → ✅ Check",
+  subtopics:[
+    {text:"20.2 Objectives of cash management — liquidity, minimise cost of idle cash, avoid default",loc:"Ch.20"},
+    {text:"20.3 TSA and cash management — how TSA enables centralised cash management",loc:"Ch.20"},
+    {text:"20.4 Cash flow forecasting — rolling 30/90-day cash flow for government",loc:"Ch.20"},
+    {text:"20.5 Short-term borrowing — CBN Ways and Means Advances; overdraft",loc:"Ch.20"},
+    {text:"20.5 Ways and Means limit — 5% of previous year's actual revenue (FRA cap)",loc:"Ch.20"},
+    {text:"20.6 Investment of surplus government cash — money market instruments (T-Bills)",loc:"Ch.20"},
+    {text:"20.7 Borrowing guidelines — FRA 2007 borrowing limits; Senate approval for external loans",loc:"Ch.20"},
+    {text:"20.8 External borrowing approval — National Assembly must approve external loans",loc:"Ch.20"},
+    {text:"20.9 State government borrowing — FAAC guarantee; federal approval threshold",loc:"Ch.20"},
+    {text:"20.10 Cash management risks — liquidity risk, refinancing risk, interest rate risk",loc:"Ch.20"},
+    {text:"20.11 Chapter review + worked examples",loc:"Ch.20"},
+  ],
+  recall:[
+    "State 5 objectives of cash management in government",
+    "What are 'Ways and Means' advances? Who provides them? What is the statutory limit?",
+    "What approval is needed for external government borrowing in Nigeria?",
+    "In what instruments can the government invest surplus cash?",
+    "State 3 cash management risks that government faces",
+  ],
+  examTip:"🔥 Ways and Means = CBN lending to FG to cover short-term revenue shortfall. The FRA limit is 5% of previous year's actual revenue. If exceeded, Senate must approve. Exam tests this limit.",
+},
+// ─── PHASE 4: LOW-EFFORT HIGH-YIELD CHAPTERS ─────────────────────────
+{
+  phase:"phase4",
+  topic:"Government Construction Contracts & Procurement",
+  focus:"Public Procurement Act, Tender Boards, Contract Award & Due Process",
+  ref:"Ch.4 · Sec 4.0–4.23",
+  hours:1,
+  method:"📖 Read Ch.4 fully (40 min) → 📝 List procurement methods → Explain tender board procedure → ✅ Check → Make 1-page summary card",
+  subtopics:[
+    {text:"4.2 Introduction — importance of procurement in public expenditure management",loc:"Ch.4"},
+    {text:"4.3 Public Procurement Act 2007 — establishment of BPP (Bureau of Public Procurement)",loc:"Ch.4"},
+    {text:"4.3 BPP — mandate, functions; oversight of procurement across MDAs",loc:"Ch.4"},
+    {text:"4.4 Tender splitting — definition; how it circumvents due process; sanctions",loc:"Ch.4"},
+    {text:"4.5 Registration of contractors/suppliers — pre-qualification requirements",loc:"Ch.4"},
+    {text:"4.6 Audit inspection — procurement audit; BPP inspection powers",loc:"Ch.4"},
+    {text:"4.7 Operation of tender boards — ministerial, departmental, and special tender boards",loc:"Ch.4"},
+    {text:"4.8 Notice of invitation — public advertisement requirements; timeframes",loc:"Ch.4"},
+    {text:"4.9 Deposit for tender — purpose; amounts; refund conditions",loc:"Ch.4"},
+    {text:"4.10 Tender procedure — sealed bids; opening ceremony; evaluation criteria",loc:"Ch.4"},
+    {text:"4.11 Award of contract — evaluation report; approval authorities by amount",loc:"Ch.4"},
+    {text:"4.12 Post-contract award activities — contract management; performance monitoring",loc:"Ch.4"},
+    {text:"4.13 Terms of contract — standard clauses; price variation; mobilisation fee",loc:"Ch.4"},
+    {text:"4.14 Contract payment vouchers — certification of work done; stage payments",loc:"Ch.4"},
+    {text:"4.15 Operation of the Public Procurement Act 2007 — full scope",loc:"Ch.4"},
+    {text:"4.16 Role of accounting officers in procurement — final responsibility",loc:"Ch.4"},
+    {text:"4.17 Fundamental principles of public procurement — transparency, competition, value",loc:"Ch.4"},
+    {text:"4.18 Procurement methods — Open competitive bidding, Restricted, Single source, Direct",loc:"Ch.4"},
+    {text:"4.19 Due process guidelines — zero tolerance for irregularities",loc:"Ch.4"},
+    {text:"4.20 Procurement plan — mandatory; must align with budget",loc:"Ch.4"},
+    {text:"4.21 Procurement implementation — from plan to contract award",loc:"Ch.4"},
+    {text:"4.22 Special and restricted methods — when allowed; approval required",loc:"Ch.4"},
+    {text:"4.23 Disposal of government assets — Board of Survey; public auction",loc:"Ch.4"},
+  ],
+  recall:[
+    "What is the Public Procurement Act 2007? What body does it establish?",
+    "What is tender splitting? Why is it prohibited? State the sanction",
+    "State 4 procurement methods under the Act and when each is appropriate",
+    "Who must approve contracts above ₦2.5bn at Federal Government level?",
+    "What are the 5 fundamental principles of public procurement?",
+  ],
+  examTip:"🔥 BPP = Bureau of Public Procurement. Procurement methods: Open Competitive Bidding (default), Restricted tendering, Request for quotation, Direct procurement (exception only). Know the hierarchy.",
+},
+{
+  phase:"phase4",
+  topic:"Effects of Finance Acts on Public Sector",
+  focus:"Finance Acts 2020, 2021 & 2023 — Key Amendments to Public Sector Finance",
+  ref:"Ch.10 · Sec 10.0–10.8",
+  hours:1,
+  method:"📖 Read Ch.10 fully (30 min) → 📝 List 5 changes from each Finance Act that affect the public sector → ✅ Check → Make amendment comparison table",
+  subtopics:[
+    {text:"10.2 Introduction — what a Finance Act is; how it amends existing tax and fiscal laws",loc:"Ch.10"},
+    {text:"10.3 Finance Act 2020 — key provisions affecting public sector entities",loc:"Ch.10"},
+    {text:"10.3 Finance Act 2020: VAT exemptions for basic goods; CIT changes; WHT amendments",loc:"Ch.10"},
+    {text:"10.3 Finance Act 2020: Small company CIT rate — 0% for turnover <₦25m",loc:"Ch.10"},
+    {text:"10.4 Finance Act 2021 — significant provisions for government entities",loc:"Ch.10"},
+    {text:"10.4 Finance Act 2021: VAT rate confirmation at 7.5%; insurance changes",loc:"Ch.10"},
+    {text:"10.4 Finance Act 2021: Capital allowance reforms; stamp duty on electronic transactions",loc:"Ch.10"},
+    {text:"10.5 Finance Act 2023 — latest amendments; public sector implications",loc:"Ch.10"},
+    {text:"10.5 Finance Act 2023: Windfall tax on bank profits; anti-avoidance provisions",loc:"Ch.10"},
+    {text:"10.5 Finance Act 2023: Revenue implications for government budget",loc:"Ch.10"},
+    {text:"10.6 Impact of Finance Acts on government revenue projections",loc:"Ch.10"},
+    {text:"10.7 Impact of Finance Acts on public expenditure and subsidies",loc:"Ch.10"},
+    {text:"10.8 Chapter review — key changes from all 3 Acts",loc:"Ch.10"},
+  ],
+  recall:[
+    "What is a Finance Act? How often is it enacted in Nigeria?",
+    "State 3 key changes from the Finance Act 2020 affecting public sector",
+    "What VAT rate was confirmed by the Finance Act 2021?",
+    "State 2 provisions of the Finance Act 2023 that affect government revenue",
+    "How do Finance Acts affect the government's budget projections?",
+  ],
+  examTip:"🔥 Finance Acts amend existing laws annually. VAT = 7.5% (confirmed 2021). Small companies CIT = 0% (<₦25m turnover), 20% (₦25m–₦100m). These rates affect government revenue forecasts.",
+},
+{
+  phase:"phase4",
+  topic:"Emerging Issues in Nigerian Public Sector",
+  focus:"TSA Deep Dive, GIFMIS, IPPIS, ATRRS, UTAS & e-Government Initiatives",
+  ref:"Ch.8 · Sec 8.0–8.10",
+  hours:1,
+  method:"📖 Read Ch.8 fully (30 min) → 📝 For each system: acronym | what it stands for | purpose | 3 benefits → ✅ Check",
+  subtopics:[
+    {text:"8.2 Introduction — why e-government matters for PFM accountability",loc:"Ch.8"},
+    {text:"8.3 Treasury Single Account (TSA) — full deep-dive: history, implementation, exemptions",loc:"Ch.8"},
+    {text:"8.3 TSA exemptions — embassies, intelligence agencies, some special funds",loc:"Ch.8"},
+    {text:"8.3 TSA challenges — resistance from MDAs; implementation gaps; benefits realised",loc:"Ch.8"},
+    {text:"8.4 ATRRS — Automated Accounting Transaction Recording and Reporting System; real-time data",loc:"Ch.8"},
+    {text:"8.5 IPPIS — Integrated Personnel and Payroll Information System; HR and payroll integration",loc:"Ch.8"},
+    {text:"8.5 IPPIS impact — ghost workers removed; payroll savings achieved",loc:"Ch.8"},
+    {text:"8.6 GIFMIS — Government Integrated Financial Management Information System",loc:"Ch.8"},
+    {text:"8.6 GIFMIS modules — Budget module, Accounting module, Procurement module",loc:"Ch.8"},
+    {text:"8.7 UTAS — University Transparency and Accountability Solution; ASUU dispute",loc:"Ch.8"},
+    {text:"8.8 Open Treasury Portal (OTP) — real-time public portal for govt expenditure",loc:"Ch.8"},
+    {text:"8.9 Future emerging issues — blockchain in public finance, AI in budgeting",loc:"Ch.8"},
+    {text:"8.10 Chapter review + worked examples",loc:"Ch.8"},
+  ],
+  recall:[
+    "State what each acronym stands for: TSA, GIFMIS, IPPIS, ATRRS, UTAS, OTP",
+    "What are the TSA exemptions? Name 3 categories exempt from TSA",
+    "Explain GIFMIS — what 3 modules does it contain and what does each do?",
+    "How has IPPIS addressed the ghost workers problem in Nigerian government?",
+    "Why did ASUU resist UTAS? What were the university sector's stated concerns?",
+  ],
+  examTip:"🔥 GIFMIS modules: Budget | Accounts | Procurement. TSA: all MDAs' bank accounts collapsed into ONE CBN account. Ghost workers = civil servants on payroll who don't exist or work.",
+},
+{
+  phase:"phase4",
+  topic:"Sustainable Development Goals & Project Appraisal",
+  focus:"SDGs Framework + Ch.38: Project Appraisal + Ch.39: Emerging Issues in Public Finance",
+  ref:"Ch.38 · Ch.39 · Ch.41",
+  hours:1,
+  method:"📖 Read Ch.38 + Ch.39 + Ch.41 (40 min) → 📝 State NPV and BCR decision rules → List 4 PPP types → State 5 SDGs → ✅ Check",
+  subtopics:[
+    {text:"Ch.41 SDGs overview — 17 Sustainable Development Goals; adopted 2015; target 2030",loc:"Ch.41"},
+    {text:"Ch.41 SDGs in Nigeria — FG SDG programme; financing gap; ERGP alignment",loc:"Ch.41"},
+    {text:"Ch.41 Financing SDGs — domestic resource mobilisation, blended finance, ODA",loc:"Ch.41"},
+    {text:"Ch.38 Purpose of project appraisal — justify public spending decisions",loc:"Ch.38"},
+    {text:"Ch.38 Cost-Benefit Analysis (CBA) — NPV approach; shadow pricing of non-market benefits",loc:"Ch.38"},
+    {text:"Ch.38 Net Present Value (NPV) — NPV > 0 = accept; discount rate selection",loc:"Ch.38"},
+    {text:"Ch.38 Benefit-Cost Ratio (BCR) — BCR = PV Benefits / PV Costs; accept if BCR > 1",loc:"Ch.38"},
+    {text:"Ch.38 Internal Rate of Return (IRR) — the rate that makes NPV = 0; accept if IRR > cost of capital",loc:"Ch.38"},
+    {text:"Ch.38 Payback Period — how quickly investment is recovered; limitation for long-term projects",loc:"Ch.38"},
+    {text:"Ch.39 Public-Private Partnerships (PPP) — definition; why government uses PPP",loc:"Ch.39"},
+    {text:"Ch.39 PPP types — BOT (Build-Operate-Transfer), BOOT (Build-Own-Operate-Transfer), BLT (Build-Lease-Transfer), DBFOM",loc:"Ch.39"},
+    {text:"Ch.39 Climate finance and green budgeting — carbon credits; climate-responsive budgeting",loc:"Ch.39"},
+  ],
+  recall:[
+    "How many SDGs are there? Name 5 relevant to Nigeria's public finance agenda",
+    "What is Cost-Benefit Analysis? State the NPV decision rule",
+    "What is BCR? State the BCR threshold for project acceptance",
+    "Distinguish BOT from BOOT — state what happens at each stage",
+    "What is green budgeting? Give 2 examples of its application in Nigeria",
+  ],
+  examTip:"🔥 PPP types: BOT = Build Operate Transfer. BOOT = Build Own Operate Transfer (private entity OWNS during operation period). BCR > 1 = accept. NPV > 0 = accept. IRR > discount rate = accept.",
+},
+// ─── PHASE 5: INTENSIVE REVISION ─────────────────────────────────────
+{
+  phase:"phase5",
+  topic:"Introduction to Public Sector Accounting & Finance + Pensions",
+  focus:"Ch.1 PSAF Introduction + Ch.5 Standardisation + Ch.6 Pensions + Ch.7 Investments",
+  ref:"Ch.1 · Ch.5 · Ch.6 · Ch.7",
+  hours:1,
+  method:"📖 Read Ch.1 + Ch.6 intro (25 min) → 📝 State 5 PSAF objectives → CPS mechanics → ✅ Check",
+  subtopics:[
+    {text:"Ch.1 Objectives of public sector accounting — 5 key objectives",loc:"Ch.1 sec 1.5"},
+    {text:"Ch.1 Users of PSAF information — legislators, public, creditors, donors, management",loc:"Ch.1 sec 1.4"},
+    {text:"Ch.1 Constitutional and regulatory frameworks — 1999 Constitution provisions",loc:"Ch.1 sec 1.5"},
+    {text:"Ch.1 Concepts in PSAF — going concern, substance over form, materiality",loc:"Ch.1 sec 1.6"},
+    {text:"Ch.1 Bases of PSAF — cash, modified cash, modified accrual, full accrual",loc:"Ch.1 sec 1.7"},
+    {text:"Ch.5 Standardisation of reporting — NCOA; uniform reporting formats across tiers",loc:"Ch.5"},
+    {text:"Ch.6 Pension Reform Act 2014 — Contributory Pension Scheme (CPS): 8% employee, 10% FG employer",loc:"Ch.6 sec 6.3"},
+    {text:"Ch.6 PenCom — National Pension Commission; regulates all pension fund activities",loc:"Ch.6 sec 6.7"},
+    {text:"Ch.6 PFAs — Pension Fund Administrators; invest and manage RSA funds",loc:"Ch.6 sec 6.8"},
+    {text:"Ch.6 PFCs — Pension Fund Custodians; hold pension assets in safe custody",loc:"Ch.6 sec 6.9"},
+    {text:"Ch.7 Investment accounting in public sector — government investment in entities",loc:"Ch.7"},
+  ],
+  recall:[
+    "State 5 objectives of public sector accounting and finance",
+    "How does the Contributory Pension Scheme work? State the contribution percentages",
+    "Who regulates pension funds in Nigeria? State 3 PenCom functions",
+    "What are PFAs and PFCs? Distinguish their roles",
+    "State 3 bases of accounting and how recognition differs under each",
+  ],
+  examTip:"🔥 CPS: Employee 8% + Employer 10% (FG) = 18% of monthly emolument. Private sector employer = 10%. Managed by PFAs. Regulated by PenCom. Assets held by PFCs.",
+},
+{
+  phase:"phase5",
+  topic:"Towards National Fiscal Responsibility & Govt Procurement Review",
+  focus:"Ch.2 National Fiscal Responsibility + Full Ch.4 Review",
+  ref:"Ch.2 · Ch.4",
+  hours:1,
+  method:"📖 Read Ch.2 fully (25 min) → 📝 List FRA key sections → Review Ch.4 procurement summary → ✅ Check",
+  subtopics:[
+    {text:"Ch.2 Towards National Fiscal Responsibility — scope and purpose",loc:"Ch.2"},
+    {text:"Ch.2 Annual budgets and MTEF — legal relationship between MTEF and budget",loc:"Ch.2 sec 2.5"},
+    {text:"Ch.2 Public revenue, expenditure, debt provisions under national fiscal responsibility",loc:"Ch.2 sec 2.10-2.12"},
+    {text:"Ch.2 Budgetary execution and achievement of targets — monitoring mechanism",loc:"Ch.2 sec 2.13"},
+    {text:"Ch.2 Aggregate expenditure ceiling — how computed; enforcement",loc:"Ch.2 sec 2.14"},
+    {text:"Ch.2 Savings and asset management — surplus treatment",loc:"Ch.2 sec 2.15"},
+    {text:"Ch.2 Enforcement provisions — sanctions for non-compliance",loc:"Ch.2 sec 2.16"},
+    {text:"Ch.4 Review — BPP functions, procurement methods, tender board levels",loc:"Ch.4"},
+    {text:"Ch.4 Review — contract payment vouchers, due process principles",loc:"Ch.4"},
+    {text:"Synthesis — how FRA 2007 + Ch.2 + Ch.40 link together for PFM accountability",loc:"Ch.2 + Ch.40"},
+  ],
+  recall:[
+    "What does the FRA 2007 say about annual budget preparation relative to MTEF?",
+    "How is the Aggregate Expenditure Ceiling determined under Ch.2?",
+    "What sanctions apply for violating the aggregate expenditure ceiling?",
+    "What are the 3 levels of tender board in the Nigerian government?",
+    "Synthesise: how do MTEF, FRA, and GIFMIS work together for accountability?",
+  ],
+  examTip:"🔥 The FRA 2007 is operationalised through the MTEF. The MTEF provides the multi-year fiscal framework within which annual budgets are set. The FRA = the law; the MTEF = the instrument.",
+},
+{
+  phase:"phase5",
+  topic:"COMPREHENSIVE MOCK EXAM — Full Paper",
+  focus:"Full Examination Simulation: Public Sector + Public Finance + All Chapters",
+  ref:"All chapters",
+  hours:2,
+  method:"⏱️ STRICT EXAM CONDITIONS. No notes, no phone. 2 hours. Stop when time is up. Mark yourself. Log every lost mark.",
+  subtopics:[
+    {text:"MOCK Q1 (25 marks): Prepare full accrual-basis FS set from given adjusted trial balance",loc:"Ch.23"},
+    {text:"MOCK Q2 (20 marks): Cash budget + variance analysis + IPSAS 24 comparison",loc:"Ch.11"},
+    {text:"MOCK Q3 (15 marks): Revenue allocation calculations — FAAC + derivation + horizontal sharing",loc:"Ch.34 + Ch.37"},
+    {text:"MOCK Q4 (15 marks): IPSAS 33 scenario — identify exemptions; prepare Opening SoFP",loc:"Ch.24"},
+    {text:"MOCK Q5 (10 marks): Public debt — DSR calculation + debt redemption theory",loc:"Ch.36"},
+    {text:"MOCK Q6 (10 marks): Theory — TSA, GIFMIS, IPPIS benefits and challenges",loc:"Ch.8 + Ch.40"},
+    {text:"MOCK Q7 (5 marks): Procurement — BPP functions + procurement methods",loc:"Ch.4"},
+    {text:"Mark your paper against model answers — score each question",loc:"All"},
+    {text:"Post-mock: categorise every lost mark — format/knowledge/calculation/time",loc:"All"},
+  ],
+  recall:[
+    "What is your total score? What is your target score?",
+    "Which 3 questions cost you the most marks?",
+    "Was it format errors, knowledge gaps, calculation mistakes, or time management?",
+  ],
+  examTip:"🔥 Exam strategy: Read ALL questions first (5 min). Start with highest marks. Show ALL workings. Write theory in clear numbered paragraphs. Manage time: no question should take >30% of available time.",
+},
+{
+  phase:"phase5",
+  topic:"WEAK AREA BLITZ",
+  focus:"Targeted Study of Your Personal 3 Weakest Topics from Mock Analysis",
+  ref:"Based on your mock performance",
+  hours:2,
+  method:"📊 Review your mock score sheet → Identify 3 lowest topics → Return to those exact chapters → Re-read → Re-do all worked examples for those topics → Make emergency summary cards",
+  subtopics:[
+    {text:"Step 1: Review all mock score sheets (Days 30, 42, and comprehensive mock)",loc:"Your notes"},
+    {text:"Step 2: Identify your 3 consistently lowest-scoring topics",loc:"Your notes"},
+    {text:"Step 3: Return to the textbook for each — read the chapter intro and key definitions",loc:"Relevant chapters"},
+    {text:"Step 4: Redo ALL worked examples for the 3 weak topics",loc:"Relevant chapters"},
+    {text:"Step 5: Make a one-page 'emergency summary card' for each weak topic",loc:"Your notes"},
+    {text:"Step 6: Practice the specific question FORMAT you struggled with",loc:"Your notes"},
+    {text:"Step 7: Get someone to test you on those 3 topics orally",loc:"Study partner"},
+  ],
+  recall:[
+    "For each weak topic: can you now explain it clearly to someone who has never studied it?",
+    "Can you reproduce the key formats (FS, transcript, budget) from memory?",
+    "Have you fixed the specific error type (format/knowledge/calculation) that cost marks?",
+  ],
+  examTip:"🔥 The student who fixes weaknesses 2 weeks before the exam gains 10–15 marks. Don't review what you already know. Operate like a surgeon: identify the exact wound and fix it.",
+},
+{
+  phase:"phase5",
+  topic:"RAPID-FIRE FINAL REVIEW — All 27 Topics",
+  focus:"2-Minute Brain Dump Per Topic — Complete Coverage Pass",
+  ref:"All chapters",
+  hours:2,
+  method:"⏱️ Set 2-minute timer per topic × 27 topics = 54 min. For each: close eyes → recall 5 key points → write them down → check your notes → mark gaps",
+  subtopics:[
+    {text:"2-min brain dump: Budgeting — types, variances, ZBB, IPSAS 24",loc:"Ch.11"},
+    {text:"2-min brain dump: Authorization of Expenditure — CRF, Warrants, COSO",loc:"Ch.15"},
+    {text:"2-min brain dump: Sources of Revenue — FAAC percentages, tax types",loc:"Ch.14"},
+    {text:"2-min brain dump: Cash Basis & Monthly Transcripts — format, advances",loc:"Ch.18"},
+    {text:"2-min brain dump: Cash-Basis Statutory FS — R&P, Appropriation Account formats",loc:"Ch.21"},
+    {text:"2-min brain dump: IPSAS General — IPSASB, qualitative characteristics, standards list",loc:"Ch.28"},
+    {text:"2-min brain dump: Accrual FS — all 4 statements headings",loc:"Ch.23"},
+    {text:"2-min brain dump: IPSAS 33 — must/may list, 3-year window",loc:"Ch.24"},
+    {text:"2-min brain dump: LGA Accounting — JAAC, revenue sources, Treasurer",loc:"Ch.22"},
+    {text:"2-min brain dump: Transparency — IMF 4 pillars, OBI, accountability factors",loc:"Ch.12"},
+    {text:"2-min brain dump: Public Revenue — canons, FAAC formula, horizontal sharing",loc:"Ch.34"},
+    {text:"2-min brain dump: Public Expenditure — Wagner, MTEF, 3 Es of VFM",loc:"Ch.35"},
+    {text:"2-min brain dump: Public Debt — DMO functions, DSR, sinking fund",loc:"Ch.36"},
+    {text:"2-min brain dump: Fiscal Federalism — vertical/horizontal formula, derivation",loc:"Ch.37"},
+    {text:"2-min brain dump: PFM — TSA, GIFMIS, FRA 2007, 5 provisions",loc:"Ch.40 + Ch.8"},
+    {text:"2-min brain dump: Financial Responsibility — Accounting Officers, surcharge",loc:"Ch.13"},
+    {text:"2-min brain dump: Advances — imprest types, retirement, un-retired treatment",loc:"Ch.17"},
+    {text:"2-min brain dump: Ethics — OPICT principles, EFCC vs ICPC",loc:"Ch.3"},
+    {text:"2-min brain dump: Inventory — bin card format, stocktaking, LPO",loc:"Ch.19"},
+    {text:"2-min brain dump: Cash Management — Ways and Means, 5% limit",loc:"Ch.20"},
+    {text:"2-min brain dump: Procurement — BPP, methods, tender board levels",loc:"Ch.4"},
+    {text:"2-min brain dump: Finance Acts — VAT rate, CIT small company rate",loc:"Ch.10"},
+    {text:"2-min brain dump: Emerging Issues — TSA exemptions, GIFMIS modules",loc:"Ch.8"},
+    {text:"2-min brain dump: SDGs — 17 goals, Nigeria financing, PPP types",loc:"Ch.41 + Ch.38 + Ch.39"},
+    {text:"2-min brain dump: Pensions — CPS percentages, PenCom, PFA, PFC",loc:"Ch.6"},
+    {text:"2-min brain dump: Fiscal Responsibility — FRA + Ch.2 MTEF link",loc:"Ch.2 + Ch.40"},
+    {text:"Final 6 min: MNEMONICS CHECK — all key percentages, formulas, and lists",loc:"All"},
+  ],
+  recall:[
+    "Can you recall 5 key points from EVERY one of the 27 topics without notes?",
+    "Do you have all format layouts memorised (FS, transcript, budget, appropriation account)?",
+    "Do you know all key percentages cold: FAAC, horizontal sharing, DSR, CPS, derivation?",
+  ],
+  examTip:"🔥 You've worked 60 days for this. The preparation is done. This session is CONFIRMATION — not learning. Trust the process you followed. Sleep well. Walk in sharp.",
+},
+{
+  phase:"phase5",
+  topic:"EXAM EVE — FINAL DAY",
+  focus:"Light Review Only, Logistics & Mental Preparation",
+  ref:"Summary cards only",
+  hours:1,
+  method:"🧘 LIGHT ONLY. Read summary cards for 20 minutes MAX. No new chapters. No panic studying. Prepare physically and mentally.",
+  subtopics:[
+    {text:"Light read-through of your one-page summary cards ONLY — 20 minutes maximum",loc:"Your summary cards"},
+    {text:"Confirm: exam venue address, reporting time, exam start time",loc:"Your admit card"},
+    {text:"Prepare your exam kit: 2 blue/black pens, HB pencil, calculator (check it works), ruler",loc:"Your bag"},
+    {text:"Prepare ID documents: ICAN exam card / student ID / photo ID",loc:"Your bag"},
+    {text:"Plan your morning: wake-up time, commute time, meal time — add 30 minutes buffer",loc:"Your phone"},
+    {text:"Eat a proper meal tonight and in the morning — your brain needs sustained energy",loc:"Kitchen"},
+    {text:"7–8 hours sleep is NON-NEGOTIABLE — your brain consolidates memory during sleep",loc:"Your bed"},
+    {text:"Visualise: entering the hall calm, reading each question carefully, writing confidently",loc:"Your mind"},
+    {text:"NO new studying. NO panic reviewing. The work is done. Trust it.",loc:"Your confidence"},
+  ],
+  recall:[
+    "You have studied 27 topics across 60 sessions. That is extraordinary commitment.",
+    "Tomorrow is execution day. Tonight is rest day.",
+    "You are ready. You've done the work. Go get your FCA. ⚔",
+  ],
+  examTip:"🔥 Final tips: (1) Read every question FULLY before answering. (2) Start with what you know best. (3) Show ALL workings — partial marks exist. (4) Manage time: don't overrun on one question. (5) You've got this.",
+},
+];
+
+// ══════════════════════════════════════════════════════════
+// FRIDAY REVISION TOPICS (cycle through these)
+// ══════════════════════════════════════════════════════════
+const FRI_REVISIONS = [
+  {
+    title:"Week 1 Revision — Budgeting & Expenditure Authorization",
+    topics:[
+      "Budget types: write ZBB, PPBS, Performance, Rolling, Flexible from memory",
+      "Expenditure chain: Appropriation → Warrant → Commitment → Payment → Record",
+      "Constitutional sections 80-83: state each in one sentence",
+      "COSO 5 components: name and explain each",
+      "Virement conditions: state all 3 mandatory conditions",
+    ],
+    pastQs:[
+      {
+        exam:"NOV 2023 — Q2(a) [8 marks]",
+        question:"Enumerate FOUR of the documents that must accompany the Appropriation Bill when the President is making submission to the National Assembly.",
+        answer:"1. A copy of the underlying revenue and expenditure profile for the next two years.\n2. A report setting out actual and budgeted revenue and expenditure, with detailed analysis of the budget performance for the 18 months up to June of the preceding financial year.\n3. A fiscal target document derived from the MTEF, setting out: target inflation rate, target fiscal account balances, and any other development targets deemed appropriate.\n4. A fiscal risk document evaluating fiscal and other related risks to the annual budget, and specifying measures to offset the occurrence of such risks.",
+      },
+      {
+        exam:"MAY 2024 — Q4(b) [12 marks]",
+        question:"Discuss the SIX structures of the National Chart of Accounts (NCOA) for budgeting.",
+        answer:"1. Administrative segment: Classifies revenue and expenditure by MDA (Ministry, Department, Agency) responsible for the budget.\n2. Economic segment: Classifies transactions by economic nature (e.g., salaries, goods, capital expenditure, debt service).\n3. Functional/COFOG segment: Classifies by government function (e.g., education, health, defence) in line with IMF's Classification of Functions of Government.\n4. Programme segment: Groups activities that share a common objective or output — links budget to outcomes.\n5. Fund segment: Identifies the source of funding (Consolidated Revenue Fund, Special Fund, Donor Fund, etc.).\n6. Geographic/Location segment: Identifies where expenditure occurs — used for regional and zonal analysis.",
+      },
+    ],
+  },
+  {
+    title:"Week 2 Revision — Revenue, Cash Basis & Transcripts",
+    topics:[
+      "FAAC sharing formula: FG 52.68%, States 26.72%, LGAs 20.60% — write exact percentages",
+      "Derivation principle: 13% — to which states and from which revenue?",
+      "Monthly Transcript format: reproduce the 2-sided shell from memory",
+      "Cash basis vs Accrual: when is revenue recognised under each?",
+      "Non-tax revenues: list 5 examples with their source authority",
+    ],
+    pastQs:[
+      {
+        exam:"MAY 2024 — Q5(a) [7½ marks]",
+        question:"State and explain FIVE principles that guide revenue allocation in Nigeria.",
+        answer:"1. Derivation: The state from which the bulk of the revenue is obtained receives an extra share (currently 13% of mineral revenue) above what other states receive.\n2. Even Development: Revenue should be allocated to spread growth and reduce serious inequalities/imbalances across the federation, even if it reduces overall efficiency.\n3. Need: States with greater developmental needs (population, infrastructure gap) should receive more revenue to realise their potential.\n4. National Interest: The highest level of government (FG) may transfer funds to lower units in the national interest — exercised through discretionary/equalisation grants.\n5. Independent Revenue: Each tier of government should be able to raise and retain some revenue for its own use, promoting fiscal autonomy.",
+      },
+      {
+        exam:"MAY 2023 — Q7(a) [5 marks]",
+        question:"Differentiate between public revenue and public receipts, and state their sources.",
+        answer:"Public Revenue refers to income generated by government from its activities and operations. Sources include: taxes (CIT, VAT, PPT, PAYE), fees, fines, royalties, rents, licences, and dividends from SOEs.\n\nPublic Receipts is a broader concept — it covers ALL money received by government, INCLUDING borrowings, printing of currency, grants, gifts, donations, and sale of public assets, as well as the narrower public revenue.\n\nKey distinction: All public revenue is a public receipt, but NOT all public receipts are public revenue. Borrowing is a receipt but NOT revenue because it must be repaid.",
+      },
+    ],
+  },
+  {
+    title:"Week 3 Revision — Statutory FS & IPSAS Standards",
+    topics:[
+      "R&P Statement: reproduce format from memory (Opening balance, Receipts, Payments, Closing balance)",
+      "Appropriation Account: all columns — Approved Vote | Amount Issued | Amount Spent | Saving/(Overexp)",
+      "IPSAS 24: what 3 columns must appear in budget comparison?",
+      "IPSASB: who is it? What body does it operate under?",
+      "URRC: Understandability, Relevance, Reliability, Comparability — define each",
+    ],
+    pastQs:[
+      {
+        exam:"MAY 2025 — Q3(a) [2 marks]",
+        question:"Explain what is meant by 'fair presentation' of financial statements for public entities.",
+        answer:"Fair presentation requires the faithful representation of the effects of transactions, other events, and conditions in accordance with the definitions and recognition criteria for assets, liabilities, revenue and expenses set out in the applicable IPSASs.\n\nThe application of IPSASs is presumed to result in fair presentation. An entity shall: (i) Select and apply accounting policies in accordance with IPSAS 3; (ii) Present information that is relevant, reliable, comparable and understandable; (iii) Provide additional disclosures where compliance with specific IPSAS requirements is insufficient to enable users understand the impact on the entity's financial position.",
+      },
+      {
+        exam:"NOV 2024 — Q4(b) [6 marks]",
+        question:"Explain THREE conditions that need to be met for supplementary funds to be approved.",
+        answer:"1. Insufficient appropriation: There must be an established need that the existing approved vote (appropriation) is insufficient to cover. The MDA must demonstrate that the original vote has been fully utilised or is about to be exhausted.\n2. Savings must not be available: No savings exist within the existing vote from which the additional expenditure can be funded. Virement must have been considered and found inapplicable.\n3. Urgency and public interest: The expenditure must be urgent, necessary, and in the public interest — it cannot be deferred to the next financial year's budget without causing significant harm to government operations or service delivery.",
+      },
+    ],
+  },
+  {
+    title:"Week 4 Revision — Accrual Basis FS & IPSAS 33",
+    topics:[
+      "SoFP format: reproduce all major line items (Non-current assets, Current assets, Net Assets, Liabilities)",
+      "4 accrual statements: write all headings from memory (SoFP, SoFP, SoCNAE, CFS)",
+      "IPSAS 33 must-recognise list: state 4 items (PPE, Intangibles, Financial assets, Provisions)",
+      "IPSAS 33 may-exclude list: state 4 items for Year 1",
+      "Exchange vs Non-exchange revenue: IPSAS 9 vs IPSAS 23 — recognition rules",
+    ],
+    pastQs:[
+      {
+        exam:"NOV 2023 — Q2(b) [8 marks]",
+        question:"Briefly discuss the THREE types of audit responsibility of the Auditor-General for the Federation in line with Financial Regulation (2009 Edition).",
+        answer:"1. Financial Audit: Determines whether the entity's financial information is presented in accordance with applicable financial reporting and regulatory frameworks. The AuGF looks for material misstatements or errors in the financial statements that could impact users' decisions.\n\n2. Appropriation/Compliance Audit: Ensures that funds are expended as appropriated by the National Assembly. The AuGF assesses compliance with criteria from laws, parliamentary decisions, legislative acts, and established codes. The objective is to confirm that public entities follow legal authority in executing their roles.\n\n3. Value for Money (Performance) Audit: Ascertains the level of Economy, Efficiency and Effectiveness (the 3 Es) derived from government projects and programmes. Economy = spending carefully (not overpaying); Efficiency = maximising output from inputs; Effectiveness = achieving intended objectives.",
+      },
+      {
+        exam:"MAY 2025 — Q2(a) — condensed [5 marks concept]",
+        question:"State FIVE conditions or measures needed to enhance public accountability in Nigeria.",
+        answer:"1. Rendering of accounts: All public organisations must render accounts; those receiving accounts must have power to act on them.\n2. Accountable leadership: Leaders who genuinely believe in accountability and enforce laws protecting public funds without political interference.\n3. Investigative media: Active, independent media that reports on public financial misconduct and keeps leadership accountable.\n4. Whistle-blowing policy: Encourage public officials to report mismanagement — the prospect of exposure deters wrongdoing.\n5. Openness in governance: Full implementation of the Freedom of Information Act (FOIA) 2011; prompt and severe punishment for corrupt practices.",
+      },
+    ],
+  },
+  {
+    title:"Week 5 Revision — LGA Accounting & Public Sector Institutions",
+    topics:[
+      "JAAC: purpose, composition, what it allocates to LGAs",
+      "LGA revenue sources: list 6 from memory (market tolls, property rates, licences, etc.)",
+      "IMF 4 pillars of fiscal transparency: state all 4 exactly",
+      "Accountability factors in Nigeria: state 5",
+      "Quick mini-drill: state OAGF vs AuGF functions — 3 for each",
+    ],
+    pastQs:[
+      {
+        exam:"MAY 2023 — Q2(a) [8 marks]",
+        question:"Identify THREE objectives and FIVE contents of the Local Government Financial Memoranda (revised 1991).",
+        answer:"THREE Objectives:\n1. To provide administrative guidelines for local government financial management.\n2. To specify the existing checks and balances in local government finances.\n3. To define the roles and responsibilities of officers of local governments.\n\nFIVE Contents:\n1. Authority and responsibilities of the Chairman, Secretary, and Treasurer.\n2. Revenue collection procedures — how rates, fees, fines and other IGR are collected.\n3. Expenditure procedures — approval limits, payment vouchers, and commitment controls.\n4. Store and procurement management — receipt, issue and control of stores.\n5. Financial reporting — format and submission timelines for accounts and statements.",
+      },
+      {
+        exam:"NOV 2024 — Q7(b) [4 marks]",
+        question:"Enumerate the steps that the Federal Government or its agencies must take before seeking the approval of the National Assembly on their request for external borrowing.",
+        answer:"1. Seek approval of the annual borrowing programme from the appropriate authority.\n2. Seek approval of the terms and conditions of external loans as contained in the annual borrowing programme.\n3. Seek approval of overall limits for the amounts of consolidated debt of the federal, state, and local governments.\n4. Ensure compliance with the Debt Management Office (DMO) Act and any guidelines issued by the DMO regarding external borrowing procedures.",
+      },
+    ],
+  },
+  {
+    title:"Week 6 Revision — Public Revenue & Public Expenditure",
+    topics:[
+      "Adam Smith's 4 canons: name and define each with example",
+      "Horizontal sharing: state all 5 criteria with exact percentages",
+      "Wagner's Law: state it + 3 reasons he gave",
+      "Peacock-Wiseman: explain displacement effect",
+      "3 Es of VFM: Economy, Efficiency, Effectiveness — define and give examples",
+    ],
+    pastQs:[
+      {
+        exam:"NOV 2023 — Q6 [condensed]",
+        question:"Explain: (i) Debt refinancing; (ii) Why debt refinancing may be of interest to a federal authority.",
+        answer:"(i) Debt refinancing: The process of replacing existing debt obligations with new ones, typically to take advantage of more favourable interest rates, to extend maturity dates, or to restructure the terms of repayment. Also known as 'refunding' — new debt is issued to retire old debt.\n\n(ii) Why it may interest a federal authority:\n1. Interest rate reduction: If market interest rates have fallen since original borrowing, refinancing allows the government to reduce its cost of debt service.\n2. Maturity extension: Refinancing can push repayment further into the future, easing current budget pressure.\n3. Currency risk management: External debt can be refinanced in domestic currency to reduce foreign exchange risk.\n4. Avoid default risk: Refinancing maturing debt prevents default by replacing it with new borrowing before the deadline.",
+      },
+      {
+        exam:"MAY 2023 — Q7(b) [5 marks]",
+        question:"Discuss FIVE problems associated with revenue allocation in Nigeria.",
+        answer:"1. Over-dependence on oil revenue: The dominance of oil revenue has undermined agriculture and other sectors. States rely heavily on FAAC allocations, creating a 'leech syndrome' and eroding fiscal autonomy.\n2. Conflicts over the sharing formula: Agitations, controversies and outright rejection of proposed formulas have persisted since independence, driven by political rather than economic considerations.\n3. Derivation principle disputes: States without mineral resources oppose the 13% derivation allocation to oil-producing states, causing continuous friction.\n4. Weak IGR effort: Most states lack the capacity or willingness to grow their Internally Generated Revenue, making them perpetually dependent on federal transfers.\n5. Corruption and leakages: Revenue meant for all tiers is frequently diverted, embezzled, or misapplied before reaching intended beneficiaries.",
+      },
+    ],
+  },
+  {
+    title:"Week 7 Revision — Public Debt, Fiscal Federalism & PFM",
+    topics:[
+      "DMO: 6 functions from memory",
+      "DSR formula: (Debt Service / Revenue) × 100; threshold: >15% = risk",
+      "Derivation principle: constitutional section; 13%; producing states",
+      "Excess Crude Account: why is it NOT constitutional?",
+      "FRA 2007: state 5 key provisions from memory",
+    ],
+    pastQs:[
+      {
+        exam:"MAY 2025 — Q6 [15 marks]",
+        question:"(a) Explain 'Total Public Debt'. (b) Define 'Debt Sustainability' and state the main objective of conducting a DSA. (c) Explain the benefits of conducting an annual Debt Sustainability Analysis.",
+        answer:"(a) Total Public Debt: The aggregate of external debt, domestic debt, guarantees, and contingent liabilities — including debt owed by central government, state governments, local governments, and state-owned corporations. External debt = owed to foreign lenders (e.g., Eurobonds, World Bank). Domestic debt = owed to local lenders (e.g., Treasury Bills, FGN Bonds).\n\n(b) Debt Sustainability: When government is able to service all its debts without undue stress or adjustments to its income and expenditure balance in the medium to long term. Debt is sustainable when current and future income streams cover expenditure. Main objective of DSA: to evaluate whether a country's debt stock is at a manageable level that does not require future adjustment, and to identify and mitigate emerging fiscal risks.\n\n(c) Benefits of annual DSA:\n1. Early warning system: Identifies unsustainable debt trajectories before they become crises.\n2. Guides borrowing decisions: Informs how much more government can safely borrow.\n3. Supports fiscal planning: Helps align borrowing with the MTEF and budget strategy.\n4. Improves investor confidence: Demonstrates fiscal discipline to domestic and international creditors.\n5. Enables proactive debt restructuring before distress occurs.",
+      },
+      {
+        exam:"NOV 2024 — Q4(a) [10 marks]",
+        question:"Enumerate FIVE benefits each of: (i) E-payment; (ii) E-collection — as components of the Treasury Single Account (TSA).",
+        answer:"E-PAYMENT Benefits:\n1. Provides complete and timely information on government cash resources.\n2. Improves operational control on budget execution.\n3. Enables efficient cash management.\n4. Reduces bank fees and transaction costs.\n5. Facilitates issuance of warrants and Authorities to Incur Expenditure (AIEs) based on cash plan.\n\nE-COLLECTION Benefits:\n1. Controls and monitors receipts and payments of FGN funds.\n2. Prevents and detects potential and actual fraud.\n3. Improves planning through the MTEF.\n4. Avoids double payments and likely manipulation.\n5. Generates real-time data for budget monitoring and reconciliation.",
+      },
+    ],
+  },
+  {
+    title:"Week 8 Revision — Ethics, Pensions, Procurement & Finance Acts",
+    topics:[
+      "OPICT ethics principles: Objectivity, Professional competence, Integrity, Confidentiality, Transparency",
+      "CPS contribution percentages: Employee 8%, FG Employer 10%, Private employer min 10%",
+      "BPP: Bureau of Public Procurement — 3 procurement methods (Direct Labour, Selective tendering, Open tendering)",
+      "Ways and Means: definition; 5% limit under FRA 2007",
+      "TSA exemptions: 3 categories (embassies, NHF, special project accounts)",
+    ],
+    pastQs:[
+      {
+        exam:"MAY 2023 — Q4 [condensed, 10 marks]",
+        question:"(a) Explain TWO requirements of the Fiscal Responsibility Act as it affects time lag for MTEF preparation. (b) State FIVE components of the Fiscal Responsibility Act that affect states.",
+        answer:"(a) MTEF Time Lag Requirements under FRA 2007:\n1. The President must cause the preparation of the MTEF not later than six months BEFORE the next financial year (i.e., by June 30 of the current year).\n2. The MTEF shall be laid before the National Assembly at least four months before the next financial year (i.e., by August 31), giving NASS time to review before budget presentation.\n\n(b) Five FRA provisions affecting states:\n1. States must prepare their own MTEF in line with the national MTEF framework.\n2. States must maintain gross indebtedness below a specified ceiling as determined by the FRA.\n3. States must not borrow for recurrent expenditure.\n4. States must establish a contingencies fund equivalent to 2% of their projected expenditure.\n5. States must publish their budgets, accounts and audit reports within specified timelines for public access.",
+      },
+      {
+        exam:"NOV 2023 — Q7 [condensed]",
+        question:"Explain THREE merits and TWO demerits of Private Finance Initiatives (PFI) in public infrastructure.",
+        answer:"THREE Merits of PFI:\n1. Off-balance-sheet financing: Government can acquire infrastructure without immediately increasing public debt, as the private partner carries the financing burden.\n2. Risk transfer: Construction risk, cost overrun risk, and operational risk are transferred to the private sector, which has greater expertise in managing them.\n3. Efficiency and innovation: Private operators are motivated by profit to deliver projects on time, within budget, and using efficient, innovative methods.\n\nTWO Demerits of PFI:\n1. High long-term cost: The total cost over the contract lifetime (including service fees) often significantly exceeds what direct government procurement would cost — private finance is more expensive than government borrowing.\n2. Inflexibility: PFI contracts are long-term (25-30 years) and legally binding — changing service requirements or renegotiating terms is expensive and complex.",
+      },
+    ],
+  },
+  {
+    title:"Week 9 Revision — Final Comprehensive Sprint",
+    topics:[
+      "Write ALL format layouts from memory: R&P Statement, Appropriation Account, SoFP, SoFP, Monthly Transcript",
+      "All key percentages from memory: FAAC vertical, Horizontal sharing (5 criteria), Derivation 13%, CPS (8%+10%), DSR threshold 15%",
+      "All acronyms expanded: GIFMIS, IPPIS, ATRRS, UTAS, TSA, BPP, RMAFC, DMO, JAAC, MTEF, FRA",
+      "All constitutional sections: Secs 80-83 (Appropriation), Secs 85-86 (AuGF), Sec 162-163 (Federation Account)",
+      "Quick written drill: 3 theory questions — write from memory then check notes",
+    ],
+    pastQs:[
+      {
+        exam:"NOV 2024 — Q7(a) [5 marks]",
+        question:"Explain the measures open to a Federal Government in intervening in the activities of an economy.",
+        answer:"1. Fiscal Policy: Government expenditure and tax measures aimed at controlling aggregate demand. Can be expansionary (increase spending/cut taxes to stimulate) or contractionary (reduce spending/raise taxes to cool inflation). Tools: taxation, expenditure, national budget, borrowing, and subsidies.\n\n2. Monetary Policy: Actions by the monetary authorities (CBN) to control money supply, credit availability, and cost of credit. Tools: Open Market Operations, Cash Reserve Ratio, Liquidity Ratio, Bank/Discount Rate, credit ceiling, moral suasion.\n\n3. Commercial Policy: Rules and regulations influencing imports and exports. Tools: tariffs, quotas, trade restrictions — to promote exports, generate income/employment, and reduce trade deficits.\n\n4. Direct Controls: Government directly regulates prices (price controls), wages (minimum wage laws), or allocates foreign exchange to prevent market failures.",
+      },
+      {
+        exam:"MAY 2025 — Q7(a) [5 marks]",
+        question:"Identify and explain FIVE general reasons for government borrowing (public debt).",
+        answer:"1. Capital investment financing: Government borrows to fund large infrastructure projects (roads, dams, power) that generate long-term economic returns — justified because future generations who benefit also share the repayment burden.\n\n2. Deficit financing: When government expenditure exceeds tax revenue, borrowing bridges the fiscal gap, especially during recessions when tax revenue falls but spending must continue.\n\n3. Wartime and emergency expenditure: During wars or disasters, large immediate funds are needed that cannot be raised quickly through taxation — borrowing provides the rapid injection required.\n\n4. Economic stabilisation (Keynesian): In periods of recession, government borrows to increase spending, stimulating aggregate demand and reducing unemployment (fiscal stimulus).\n\n5. Monetary policy support: By issuing government securities (T-Bills, bonds), government provides instruments for the CBN's open market operations, helping to regulate money supply and interest rates.",
+      },
+    ],
+  },
+  {
+    title:"Week 10 Revision — Final Polishing & Exam Readiness",
+    topics:[
+      "LAST FORMAT DRILL: prepare SoFP + SoFP from scratch (no notes) in under 12 minutes",
+      "LAST PERCENTAGE DRILL: write every key % figure (FAAC, horizontal, derivation, CPS, DSR) from memory",
+      "MNEMONICS CHECK: AEFPFG (NCOA), CRCI-M (COSO), URRC (qualitative characteristics), 3Es (VFM)",
+      "Exam strategy: 5 min read-all → highest marks first → show all workings → no single question >30% of time",
+      "Final confidence check: which 3 topics are you most and least confident in? Note them.",
+    ],
+    pastQs:[
+      {
+        exam:"MAY 2024 — Q7 [condensed theory questions]",
+        question:"(a) Identify and explain THREE reasons why public finance is important to a developing economy like Nigeria. (b) State THREE objectives of public expenditure.",
+        answer:"(a) Importance of Public Finance to Nigeria:\n1. Resource allocation: Public finance enables government to allocate resources to sectors the private market cannot adequately serve (defence, public health, infrastructure) — overcoming market failures.\n2. Income redistribution: Through progressive taxation and social transfers (pensions, subsidies, education), public finance reduces income inequality and improves welfare of the poor.\n3. Economic stabilisation: Government uses fiscal policy (taxation and expenditure) to smooth economic cycles — stimulating the economy during recessions and cooling it during inflation.\n\n(b) Objectives of Public Expenditure:\n1. Provision of public goods and services (roads, security, healthcare) that the private sector would underprovide.\n2. Redistribution of income to reduce inequality through social welfare programmes.\n3. Economic stabilisation — managing aggregate demand to achieve full employment, price stability, and growth.",
+      },
+      {
+        exam:"MAY 2023 — Q5 (ii) [condensed]",
+        question:"Identify and explain FIVE macroeconomic objectives of the Nigerian government.",
+        answer:"1. Full Employment: Minimising unemployment to ensure all willing and able workers find productive work — achieved through fiscal and monetary stimuli.\n2. Price Stability: Controlling inflation to maintain the purchasing power of the naira — primary mandate of the CBN through monetary policy.\n3. Economic Growth: Increasing the real GDP over time through investment in infrastructure, human capital, and productivity-enhancing policies.\n4. Equitable Income Distribution: Reducing the gap between rich and poor through progressive taxation, subsidies, and social safety nets.\n5. Balance of Payments Stability: Ensuring the country's external accounts (exports, imports, foreign reserves) remain in a manageable and sustainable position through exchange rate and trade policies.",
+      },
+    ],
+  },
+];
+
+
+// ══════════════════════════════════════════════════════════
+// STATE & STORAGE
+// ══════════════════════════════════════════════════════════
+let startDate = null;
+let fullSchedule = [];
+let completedDays = {};
+let completedTasks = {};
+let completedRecall = {};
+let currentDayView = null;
+let currentTab = "subtopics";
+let filterPhase = "all";
+let prevView = "dashboard";
+
+function saveState() {
+  localStorage.setItem("psaf-start", startDate || "");
+  localStorage.setItem("psaf-days", JSON.stringify(completedDays));
+  localStorage.setItem("psaf-tasks", JSON.stringify(completedTasks));
+  localStorage.setItem("psaf-recall", JSON.stringify(completedRecall));
+}
+function loadState() {
+  startDate = localStorage.getItem("psaf-start") || null;
+  try { completedDays = JSON.parse(localStorage.getItem("psaf-days") || "{}"); } catch(e){}
+  try { completedTasks = JSON.parse(localStorage.getItem("psaf-tasks") || "{}"); } catch(e){}
+  try { completedRecall = JSON.parse(localStorage.getItem("psaf-recall") || "{}"); } catch(e){}
+}
+
+// ══════════════════════════════════════════════════════════
+// SCHEDULE GENERATION
+// ══════════════════════════════════════════════════════════
+function generateSchedule(startStr) {
+  const schedule = [];
+  let contentIdx = 0;
+  let fridayIdx = 0;
+  let current = new Date(startStr + "T00:00:00");
+  const dayNames = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+  const monthNames = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  while (schedule.length < 65) {
+    const dow = current.getDay();
+    const isFri = dow === 5;
+    const isWeekend = dow === 0 || dow === 6;
+    const dayLabel = `${dayNames[dow]} ${current.getDate()} ${monthNames[current.getMonth()]}`;
+    const dateStr = current.toISOString().split("T")[0];
+    const slotNum = schedule.length + 1;
+    if (isFri) {
+      const rev = FRI_REVISIONS[fridayIdx % FRI_REVISIONS.length];
+      schedule.push({
+        slot: slotNum, dateStr, dayLabel, hours: 1, isFriday: true,
+        topic: rev.title, focus: "Structured Revision & Active Recall + Past Exam Questions",
+        phase: "friday", ref: "Weekly Revision — No new reading",
+        method: "📝 NO READING. Brain-dump topics first → Then attempt past exam questions → Reveal answers → Note every gap",
+        subtopics: rev.topics.map(t => ({text: t, loc:"Previous session notes"})),
+        pastQs: rev.pastQs || [],
+        recall: ["Can you write every format from memory without looking?","Which topic from this week felt weakest? Revisit it Sunday.","Did you attempt the past exam questions before revealing the answers?"],
+        examTip: "🔥 Revision sessions lock in knowledge. Spaced repetition = the scientific method for exam preparation. Past exam questions = your best exam predictors.",
+      });
+      fridayIdx++;
+    } else {
+      if (contentIdx < CONTENT_DAYS.length) {
+        schedule.push({ slot: slotNum, dateStr, dayLabel, hours: isWeekend ? 2 : 1, isFriday: false, ...CONTENT_DAYS[contentIdx] });
+        contentIdx++;
+      }
+    }
+    current.setDate(current.getDate() + 1);
+  }
+  return schedule;
+}
+
+// ══════════════════════════════════════════════════════════
+// HELPERS
+// ══════════════════════════════════════════════════════════
+function phaseColor(ph) {
+  const p = PHASES.find(x => x.id === ph);
+  return p ? p.color : "#6b7280";
+}
+function todayStr() {
+  return new Date().toISOString().split("T")[0];
+}
+function getDayStats() {
+  const done = Object.keys(completedDays).filter(k => completedDays[k]).length;
+  const maxHours = fullSchedule.reduce((a, d) => a + d.hours, 0);
+  const hours = fullSchedule.reduce((a, d) => a + (completedDays[d.slot] ? d.hours : 0), 0);
+  let streak = 0;
+  for (let s = done; s >= 1; s--) {
+    if (completedDays[s]) streak++;
+    else break;
+  }
+  return { done, left: 65 - done, hours, maxHours, streak };
+}
+
+// ══════════════════════════════════════════════════════════
+// CONFETTI & TOAST
+// ══════════════════════════════════════════════════════════
+function fireConfetti() {
+  const canvas = document.getElementById("confetti-canvas");
+  canvas.style.display = "block";
+  canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+  const ctx = canvas.getContext("2d");
+  const colors = ["#f59e0b","#10b981","#ef4444","#3b82f6","#8b5cf6","#f97316","#fbbf24","#14b8a6"];
+  const parts = Array.from({length:200}, () => ({
+    x: Math.random()*canvas.width, y:-30-Math.random()*100,
+    sz:5+Math.random()*9, color:colors[Math.floor(Math.random()*colors.length)],
+    vx:-3+Math.random()*6, vy:3+Math.random()*6,
+    rot:Math.random()*360, rs:-4+Math.random()*8,
+    shape:Math.random()>.5?"rect":"circle", alpha:1
+  }));
+  let f=0;
+  function draw() {
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    parts.forEach(p=>{
+      p.x+=p.vx; p.y+=p.vy; p.rot+=p.rs; p.vy+=.09;
+      if(f>120) p.alpha-=.01;
+      ctx.save(); ctx.globalAlpha=Math.max(0,p.alpha);
+      ctx.translate(p.x,p.y); ctx.rotate(p.rot*Math.PI/180); ctx.fillStyle=p.color;
+      if(p.shape==="rect") ctx.fillRect(-p.sz/2,-p.sz/4,p.sz,p.sz/2);
+      else{ctx.beginPath();ctx.arc(0,0,p.sz/2,0,Math.PI*2);ctx.fill();}
+      ctx.restore();
+    });
+    f++;
+    if(f<220&&parts.some(p=>p.alpha>0)) requestAnimationFrame(draw);
+    else {ctx.clearRect(0,0,canvas.width,canvas.height); canvas.style.display="none";}
+  }
+  requestAnimationFrame(draw);
+}
+function showToast(msg) {
+  const el = document.getElementById("toast");
+  el.textContent = msg; el.style.display = "block";
+  setTimeout(() => el.style.display="none", 4000);
+}
+
+// ══════════════════════════════════════════════════════════
+// LAUNCH
+// ══════════════════════════════════════════════════════════
+function launchPlan() {
+  const val = document.getElementById("start-date-input").value;
+  if (!val) { alert("Please choose a start date first."); return; }
+  startDate = val;
+  fullSchedule = generateSchedule(startDate);
+  saveState();
+  initApp();
+}
+function resetPlan() {
+  if (!confirm("Reset start date? Your progress will be cleared.")) return;
+  localStorage.clear();
+  completedDays = {}; completedTasks = {}; completedRecall = {};
+  document.getElementById("view-landing").style.display = "flex";
+  document.getElementById("app-header").style.display = "none";
+  document.getElementById("app-main").style.display = "none";
+}
+function initApp() {
+  document.getElementById("view-landing").style.display = "none";
+  document.getElementById("app-header").style.display = "block";
+  document.getElementById("app-main").style.display = "block";
+  showView("dashboard");
+}
+
+// ══════════════════════════════════════════════════════════
+// VIEWS
+// ══════════════════════════════════════════════════════════
+function showView(v) {
+  document.querySelectorAll(".view").forEach(el => el.classList.remove("active"));
+  document.querySelectorAll(".nav-btn").forEach(el => el.classList.remove("active"));
+  const ve = document.getElementById("view-"+v);
+  if (ve) ve.classList.add("active");
+  const nb = document.getElementById("nav-"+v);
+  if (nb) nb.classList.add("active");
+  if (v==="dashboard") renderDashboard();
+  if (v==="schedule") renderSchedule();
+}
+function goBack() { showView(prevView || "dashboard"); }
+function openDay(slot) {
+  prevView = document.querySelector(".view.active")?.id?.replace("view-","") || "dashboard";
+  currentDayView = slot;
+  currentTab = "subtopics";
+  document.querySelectorAll(".view").forEach(el => el.classList.remove("active"));
+  document.getElementById("view-day").classList.add("active");
+  renderDayDetail(slot);
+}
+function navDay(dir) {
+  const next = currentDayView + dir;
+  if (next >= 1 && next <= 65) openDay(next);
+}
+function switchTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll(".tab-btn").forEach((b,i) => b.classList.toggle("active", ["subtopics","recall","examtip"][i]===tab));
+  document.querySelectorAll(".tab-content").forEach(el => el.classList.remove("active"));
+  document.getElementById("tab-"+tab).classList.add("active");
+}
+function setFilter(ph) { filterPhase = ph; renderSchedule(); }
+
+// ══════════════════════════════════════════════════════════
+// RENDER DASHBOARD
+// ══════════════════════════════════════════════════════════
+function renderDashboard() {
+  const today = todayStr();
+  const {done, left, hours, maxHours, streak} = getDayStats();
+  const pct = Math.round((done/65)*100);
+  document.getElementById("daily-quote").textContent = QUOTES[new Date().getDate() % QUOTES.length];
+  document.getElementById("stat-done").textContent = done;
+  document.getElementById("stat-left").textContent = left;
+  document.getElementById("stat-hours").textContent = hours;
+  document.getElementById("stat-streak").textContent = streak + "🔥";
+  document.getElementById("overall-pct").textContent = pct + "%";
+  document.getElementById("overall-bar").style.width = pct + "%";
+  document.getElementById("overall-sub").textContent = `${left} sessions left · ${hours}h of ${maxHours}h logged`;
+
+  // Phase grid
+  const pg = document.getElementById("phase-grid");
+  pg.innerHTML = "";
+  PHASES.forEach(ph => {
+    const pDays = fullSchedule.filter(d => d.phase === ph.id);
+    if (!pDays.length) return;
+    const pdone = pDays.filter(d => completedDays[d.slot]).length;
+    const ppct = Math.round((pdone / pDays.length) * 100);
+    pg.innerHTML += `<div class="phase-card" style="border-left:4px solid ${ph.color}">
+      <div class="phase-name" style="color:${ph.color}">${ph.label}</div>
+      <div class="phase-row"><span style="color:var(--dim)">${pdone}/${pDays.length}</span><span style="color:${ph.color};font-weight:700">${ppct}%</span></div>
+      <div class="phase-bar-bg"><div class="phase-bar-fill" style="background:${ph.color};width:${ppct}%"></div></div>
+    </div>`;
+  });
+
+  // Today box
+  const todayD = fullSchedule.find(d => d.dateStr === today);
+  const tw = document.getElementById("today-box-wrapper");
+  if (todayD) {
+    tw.innerHTML = `<div class="today-box">
+      <div class="today-label">▶ TODAY — SLOT ${todayD.slot}/60 · ${todayD.dayLabel} · ${todayD.hours}HR${todayD.isFriday?' · REVISION DAY':''}</div>
+      <div style="font-family:var(--display);font-size:1.05rem;color:#fff;margin-bottom:5px;font-weight:900">${todayD.topic}</div>
+      <div style="color:var(--muted);font-size:.8rem;margin-bottom:14px">${todayD.focus}</div>
+      <button onclick="openDay(${todayD.slot})" style="background:var(--amber);color:#000;border:none;padding:9px 22px;border-radius:2px;cursor:pointer;font-family:var(--display);font-weight:900;font-size:.78rem;letter-spacing:.08em">⚔ LAUNCH TODAY'S SESSION →</button>
+    </div>`;
+  } else {
+    tw.innerHTML = "";
+  }
+
+  // Day list
+  const dl = document.getElementById("dashboard-day-list");
+  dl.innerHTML = "";
+  fullSchedule.forEach(d => {
+    const isDone = completedDays[d.slot];
+    const isToday = d.dateStr === today;
+    const tasksDone = (d.subtopics || []).filter((_, i) => completedTasks[`${d.slot}-${i}`]).length;
+    const mini = d.subtopics?.length ? Math.round((tasksDone / d.subtopics.length) * 100) : 0;
+    const pColor = isDone ? "var(--green)" : phaseColor(d.phase);
+    dl.innerHTML += `<div class="day-item ${isDone?'done':''} ${d.isFriday?'friday-day':''}" style="border-left-color:${pColor}" onclick="openDay(${d.slot})">
+      <div>
+        <div class="day-num" style="color:${isDone?'var(--green)':'var(--dim)'}">${isDone?'✓':d.slot}</div>
+        <div class="day-hrs">${d.hours}h</div>
+      </div>
+      <div>
+        <div class="day-date">${d.dayLabel}${isToday?'<span class="today-badge">TODAY</span>':''}${d.isFriday?'<span class="fri-badge">REVISION</span>':''}</div>
+        <div class="day-topic" style="color:${isDone?'#6ee7b7':'var(--text)'}">${d.topic}</div>
+        <div class="day-focus">${d.focus}</div>
+      </div>
+      <div>→</div>
+    </div>`;
+  });
+}
+
+// ══════════════════════════════════════════════════════════
+// RENDER SCHEDULE
+// ══════════════════════════════════════════════════════════
+function renderSchedule() {
+  const today = todayStr();
+  const ff = document.getElementById("phase-filters");
+  const allF = [{id:"all",label:"ALL",color:"#f59e0b"}, ...PHASES];
+  ff.innerHTML = allF.map(f => `<button class="filter-btn${filterPhase===f.id?' active':''}" style="${filterPhase===f.id?`background:${f.color||'#f59e0b'};`:''}" onclick="setFilter('${f.id}')">${f.label||f.id}</button>`).join("");
+
+  const days = filterPhase === "all" ? fullSchedule : fullSchedule.filter(d => d.phase === filterPhase);
+  const dl = document.getElementById("schedule-day-list");
+  dl.innerHTML = "";
+  days.forEach(d => {
+    const isDone = completedDays[d.slot];
+    const isToday = d.dateStr === today;
+    const tasksDone = (d.subtopics||[]).filter((_,i) => completedTasks[`${d.slot}-${i}`]).length;
+    const mini = d.subtopics?.length ? Math.round((tasksDone/d.subtopics.length)*100) : 0;
+    const pColor = isDone ? "var(--green)" : phaseColor(d.phase);
+    dl.innerHTML += `<div class="day-item ${isDone?'done':''} ${d.isFriday?'friday-day':''}" style="border-left-color:${pColor};grid-template-columns:46px 1fr auto" onclick="openDay(${d.slot})">
+      <div>
+        <div class="day-num" style="color:${isDone?'var(--green)':'var(--dim)'}">${isDone?'✓':d.slot}</div>
+        <div class="day-hrs">${d.hours}h</div>
+      </div>
+      <div>
+        <div class="day-date">${d.dayLabel}${isToday?'<span class="today-badge">TODAY</span>':''}${d.isFriday?'<span class="fri-badge">REVISION</span>':''}</div>
+        <div class="day-topic" style="color:${isDone?'#6ee7b7':'var(--text)'}">${d.topic}</div>
+        <div class="day-focus">${d.focus}</div>
+      </div>
+      <div style="text-align:right">
+        <div class="day-hrs">${tasksDone}/${d.subtopics?.length||0}</div>
+        <div class="mini-bar-bg"><div class="mini-bar-fill" style="background:${isDone?'var(--green)':'var(--amber)'};width:${mini}%"></div></div>
+      </div>
+    </div>`;
+  });
+}
+
+// ══════════════════════════════════════════════════════════
+// RENDER DAY DETAIL
+// ══════════════════════════════════════════════════════════
+function renderDayDetail(slot) {
+  const d = fullSchedule.find(x => x.slot === slot);
+  if (!d) return;
+  const isDone = completedDays[d.slot];
+  const color = phaseColor(d.phase);
+
+  document.getElementById("day-header").style.border = `2px solid ${color}`;
+  document.getElementById("dd-meta").textContent = `SESSION ${d.slot} OF 65 · ${d.dayLabel} · ${d.hours}HR${d.isFriday?' · REVISION DAY':''}`;
+  document.getElementById("dd-meta").style.color = "var(--dim)";
+  document.getElementById("dd-title").textContent = d.topic;
+  document.getElementById("dd-focus").textContent = d.focus;
+  document.getElementById("dd-focus").style.color = color;
+  document.getElementById("dd-ref").textContent = d.ref || "";
+  document.getElementById("dd-method").textContent = d.method;
+
+  const btn = document.getElementById("dd-complete-btn");
+  btn.textContent = isDone ? "✓ SESSION COMPLETE" : "MARK COMPLETE 🎯";
+  btn.className = "complete-btn" + (isDone ? " done" : "");
+
+  // Tasks
+  const tasksDone = (d.subtopics||[]).filter((_,i) => completedTasks[`${d.slot}-${i}`]).length;
+  document.getElementById("task-count").textContent = `SUBTOPICS — TICK OFF AS YOU COVER EACH · ${tasksDone}/${(d.subtopics||[]).length} done`;
+  const tl = document.getElementById("task-list");
+  tl.innerHTML = (d.subtopics||[]).map((st,i) => {
+    const done = completedTasks[`${d.slot}-${i}`];
+    const txt = typeof st === "string" ? st : st.text;
+    const loc = typeof st === "object" && st.loc ? st.loc : "";
+    return `<div class="task-item${done?' done':''}" onclick="toggleTask(${d.slot},${i})">
+      <div class="checkbox${done?' checked':''}"><span class="checkbox-tick">${done?'✓':''}</span></div>
+      <div>
+        <span class="task-text${done?' done':''}">${txt}</span>
+        ${loc?`<span class="task-loc">📍 ${loc}</span>`:''}
+      </div>
+    </div>`;
+  }).join("");
+
+  // Recall
+  const recallDone = (d.recall||[]).filter((_,i) => completedRecall[`${d.slot}-r${i}`]).length;
+  document.getElementById("recall-count").textContent = `CLOSE BOOK → ANSWER THESE → CHECK · ${recallDone}/${(d.recall||[]).length} done`;
+  const rl = document.getElementById("recall-list");
+  rl.innerHTML = (d.recall||[]).map((q,i) => {
+    const done = completedRecall[`${d.slot}-r${i}`];
+    return `<div class="recall-item${done?' done':''}">
+      <div class="recall-inner">
+        <span class="recall-num">Q${i+1}</span>
+        <div>
+          <p class="recall-q">${q}</p>
+          <button class="recall-btn${done?' done':''}" onclick="toggleRecall(${d.slot},${i})">${done?'✓ ANSWERED':'MARK ANSWERED'}</button>
+        </div>
+      </div>
+    </div>`;
+  }).join("");
+
+  // Exam tip / Friday detail
+  const et = document.getElementById("examtip-content");
+  if (d.isFriday) {
+    const pastQsHtml = (d.pastQs||[]).map((pq,qi) => {
+      const aLines = pq.answer.split('\n').filter(Boolean);
+      return `<div style="background:#0a1a10;border:2px solid var(--teal);border-radius:3px;padding:18px;margin-bottom:14px">
+        <div style="color:var(--teal);font-size:.55rem;letter-spacing:.2em;margin-bottom:8px">📝 PAST EXAM QUESTION ${qi+1} · ${pq.exam}</div>
+        <div style="color:#f1f5f9;font-size:.85rem;line-height:1.7;margin-bottom:14px;border-left:3px solid #f59e0b;padding-left:12px">${pq.question}</div>
+        <div style="color:#94a3b8;font-size:.62rem;letter-spacing:.12em;margin-bottom:8px;cursor:pointer" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'">▼ REVEAL MODEL ANSWER (read ONLY after attempting)</div>
+        <div style="display:none;background:#051a10;border-radius:2px;padding:14px">
+          ${aLines.map(l => `<div style="color:#6ee7b7;font-size:.8rem;line-height:1.8;margin-bottom:4px">${l}</div>`).join('')}
+        </div>
+      </div>`;
+    }).join('');
+    et.innerHTML = `<div class="friday-detail">
+      <div class="friday-label">// REVISION DAY — ACTIVE RECALL + PAST EXAM QUESTIONS</div>
+      <div class="friday-text">No new chapters today. First: brain-dump the topics in the Tasks tab. Then attempt the past exam questions below — try to WRITE YOUR OWN ANSWER before revealing the model answer.<br><br>
+      <strong style="color:var(--teal)">Method:</strong> Read question → Set 5-min timer → Write your answer → Click 'Reveal' → Compare → Note every gap → Rewrite the gap in your own words.<br><br>
+      <strong style="color:var(--teal)">Goal:</strong> 2-3 past questions per session. Quality over quantity. One well-understood answer beats three skimmed.</div>
+    </div>
+    <div style="margin-top:18px">${pastQsHtml}</div>`;
+  } else {
+    et.innerHTML = `<div class="exam-tip-box">
+      <div class="exam-tip-label">// EXAMINER'S INTELLIGENCE — READ THIS CAREFULLY</div>
+      <div class="exam-tip-text">${d.examTip || "No specific tip for this session."}</div>
+    </div>`;
+  }
+
+  // Nav buttons
+  document.getElementById("prev-btn").style.visibility = d.slot > 1 ? "visible" : "hidden";
+  document.getElementById("prev-btn").textContent = `← ${d.slot > 1 ? 'Session '+(d.slot-1) : ''}`;
+  document.getElementById("next-btn").style.visibility = d.slot < 65 ? "visible" : "hidden";
+  document.getElementById("next-btn").textContent = `Session ${d.slot+1} →`;
+
+  switchTab("subtopics");
+  document.getElementById("footer-text").textContent = `ICAN INTELLIGENCE · SESSION ${d.slot}/65 · ${getDayStats().done} SESSIONS COMPLETE`;
+}
+
+function toggleDayComplete() {
+  const was = completedDays[currentDayView];
+  completedDays[currentDayView] = !was;
+  saveState();
+  if (!was) { fireConfetti(); showToast(WIN_MSGS[Math.floor(Math.random()*WIN_MSGS.length)]); }
+  renderDayDetail(currentDayView);
+}
+function toggleTask(slot, idx) {
+  const k = `${slot}-${idx}`;
+  completedTasks[k] = !completedTasks[k];
+  saveState(); renderDayDetail(slot);
+}
+function toggleRecall(slot, idx) {
+  const k = `${slot}-r${idx}`;
+  completedRecall[k] = !completedRecall[k];
+  saveState(); renderDayDetail(slot);
+}
+
+// ══════════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════════
+loadState();
+if (startDate) {
+  fullSchedule = generateSchedule(startDate);
+  initApp();
+} else {
+  // Set default date in picker
+  document.getElementById("start-date-input").value = new Date().toISOString().split("T")[0];
+}
+</script>
+</body>
+</html>
