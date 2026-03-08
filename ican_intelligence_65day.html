@@ -135,6 +135,19 @@ main{max-width:1100px;margin:0 auto;padding:24px 16px;display:none}
 .next-btn{background:var(--amber);color:#000;border:none;padding:8px 16px;border-radius:2px;cursor:pointer;font-family:var(--display);font-weight:900;font-size:.72rem;letter-spacing:.05em}
 footer{border-top:1px solid var(--border);padding:14px;text-align:center;margin-top:36px}
 footer p{color:var(--dimmer);font-size:.57rem;letter-spacing:.15em}
+/* ── SESSION PANELS ── */
+.session-header-strip{display:flex;align-items:center;gap:10px;margin-bottom:4px}
+.session-time-badge{font-size:.5rem;letter-spacing:.12em;padding:2px 8px;border-radius:2px;font-family:var(--display);font-weight:900}
+.session-time-badge.morning{background:#1a1200;color:#f59e0b;border:1px solid #4a3000}
+.session-time-badge.afternoon{background:#0a1228;color:#3b82f6;border:1px solid #1e3a6e}
+.session-time-badge.evening{background:#120a28;color:#8b5cf6;border:1px solid #3a1e6e}
+.quickfire-card{background:var(--bg3);border:1px solid var(--blue);border-left:4px solid var(--blue);border-radius:3px;padding:13px 15px;margin-bottom:8px}
+.quickfire-label{color:var(--blue);font-size:.52rem;letter-spacing:.18em;margin-bottom:6px}
+.quickfire-q{color:var(--text);font-size:.82rem;line-height:1.55}
+.quickfire-hint{color:var(--dim);font-size:.62rem;margin-top:5px;font-style:italic}
+.session-divider{border:none;border-top:1px dashed var(--border);margin:16px 0}
+.recall-inline-label{color:var(--purple);font-size:.55rem;letter-spacing:.16em;margin:14px 0 8px;display:flex;align-items:center;gap:6px}
+.recall-inline-label::before{content:'';flex:1;height:1px;background:var(--purple);opacity:.3}
 @media(max-width:600px){.day-item{grid-template-columns:38px 1fr}.day-header{flex-direction:column}.tab-btn{padding:7px 9px;font-size:.55rem}.stats-grid{grid-template-columns:1fr 1fr}}
 </style>
 </head>
@@ -218,9 +231,9 @@ footer p{color:var(--dimmer);font-size:.57rem;letter-spacing:.15em}
     </div>
     <div class="method-box"><div class="method-label">// SESSION METHOD — FOLLOW THIS EXACTLY</div><div class="method-text" id="dd-method"></div></div>
     <div class="tabs">
-      <button class="tab-btn active" onclick="switchTab('subtopics')">📋 Tasks</button>
-      <button class="tab-btn" onclick="switchTab('recall')">🧠 Active Recall</button>
-      <button class="tab-btn" onclick="switchTab('examtip')">🔥 Exam Tips & Past Qs</button>
+      <button class="tab-btn active" onclick="switchTab('subtopics')">🌅 Morning</button>
+      <button class="tab-btn" onclick="switchTab('recall')">☀️ Afternoon</button>
+      <button class="tab-btn" onclick="switchTab('examtip')">🌙 Evening</button>
     </div>
     <div id="tab-subtopics" class="tab-content active">
       <div class="task-count" id="task-count"></div>
@@ -2085,8 +2098,10 @@ function generateSchedule(startStr) {
   const monthNames = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
   while (schedule.length < 65) {
     const dow = current.getDay();
+    // Skip Sundays — rest day
+    if (dow === 0) { current.setDate(current.getDate() + 1); continue; }
     const isFri = dow === 5;
-    const isWeekend = dow === 0 || dow === 6;
+    const isSat = dow === 6;
     const dayLabel = `${dayNames[dow]} ${current.getDate()} ${monthNames[current.getMonth()]}`;
     const dateStr = current.toISOString().split("T")[0];
     const slotNum = schedule.length + 1;
@@ -2105,7 +2120,7 @@ function generateSchedule(startStr) {
       fridayIdx++;
     } else {
       if (contentIdx < CONTENT_DAYS.length) {
-        schedule.push({ slot: slotNum, dateStr, dayLabel, hours: isWeekend ? 2 : 1, isFriday: false, ...CONTENT_DAYS[contentIdx] });
+        schedule.push({ slot: slotNum, dateStr, dayLabel, hours: isSat ? 2 : 1, isFriday: false, ...CONTENT_DAYS[contentIdx] });
         contentIdx++;
       }
     }
@@ -2128,10 +2143,35 @@ function getDayStats() {
   const done = Object.keys(completedDays).filter(k => completedDays[k]).length;
   const maxHours = fullSchedule.reduce((a, d) => a + d.hours, 0);
   const hours = fullSchedule.reduce((a, d) => a + (completedDays[d.slot] ? d.hours : 0), 0);
+
+  // Calendar-based streak: count consecutive completed study days backwards from today
   let streak = 0;
-  for (let s = done; s >= 1; s--) {
-    if (completedDays[s]) streak++;
-    else break;
+  const now = new Date();
+  // Check starting from today; if today not completed, start from yesterday
+  const todayDateStr = now.toISOString().split('T')[0];
+  const todaySlot = fullSchedule.find(d => d.dateStr === todayDateStr);
+  let checkFrom = new Date(now);
+  if (!todaySlot || !completedDays[todaySlot.slot]) {
+    // Slide back one day — if yesterday was completed the streak is still alive
+    checkFrom.setDate(checkFrom.getDate() - 1);
+    const ydStr = checkFrom.toISOString().split('T')[0];
+    const ydSlot = fullSchedule.find(d => d.dateStr === ydStr);
+    if (!ydSlot || !completedDays[ydSlot.slot]) {
+      return { done, left: 65 - done, hours, maxHours, streak: 0 };
+    }
+  }
+  // Walk backwards counting consecutive completed days (skip rest days = Sundays)
+  for (let i = 0; i < 100; i++) {
+    const dStr = checkFrom.toISOString().split('T')[0];
+    const dow = checkFrom.getDay();
+    if (dow === 0) { checkFrom.setDate(checkFrom.getDate() - 1); continue; } // skip Sundays
+    const slot = fullSchedule.find(d => d.dateStr === dStr);
+    if (slot && completedDays[slot.slot]) {
+      streak++;
+    } else if (slot) {
+      break; // study day that was missed — streak broken
+    }
+    checkFrom.setDate(checkFrom.getDate() - 1);
   }
   return { done, left: 65 - done, hours, maxHours, streak };
 }
@@ -2363,41 +2403,134 @@ function renderDayDetail(slot) {
   btn.textContent = isDone ? "✓ SESSION COMPLETE" : "MARK COMPLETE 🎯";
   btn.className = "complete-btn" + (isDone ? " done" : "");
 
-  // Tasks
-  const tasksDone = (d.subtopics||[]).filter((_,i) => completedTasks[`${d.slot}-${i}`]).length;
-  document.getElementById("task-count").textContent = `SUBTOPICS — TICK OFF AS YOU COVER EACH · ${tasksDone}/${(d.subtopics||[]).length} done`;
-  const tl = document.getElementById("task-list");
-  tl.innerHTML = (d.subtopics||[]).map((st,i) => {
-    const done = completedTasks[`${d.slot}-${i}`];
-    const txt = typeof st === "string" ? st : st.text;
-    const loc = typeof st === "object" && st.loc ? st.loc : "";
-    return `<div class="task-item${done?' done':''}" onclick="toggleTask(${d.slot},${i})">
-      <div class="checkbox${done?' checked':''}"><span class="checkbox-tick">${done?'✓':''}</span></div>
-      <div>
-        <span class="task-text${done?' done':''}">${txt}</span>
-        ${loc?`<span class="task-loc">📍 ${loc}</span>`:''}
-      </div>
-    </div>`;
-  }).join("");
+  // ── Split subtopics & recall across 3 sessions ──────────
+  const subs = d.subtopics || [];
+  const recs = d.recall || [];
+  const total = subs.length;
 
-  // Recall
-  const recallDone = (d.recall||[]).filter((_,i) => completedRecall[`${d.slot}-r${i}`]).length;
-  document.getElementById("recall-count").textContent = `CLOSE BOOK → ANSWER THESE → CHECK · ${recallDone}/${(d.recall||[]).length} done`;
-  const rl = document.getElementById("recall-list");
-  rl.innerHTML = (d.recall||[]).map((q,i) => {
-    const done = completedRecall[`${d.slot}-r${i}`];
-    return `<div class="recall-item${done?' done':''}">
-      <div class="recall-inner">
-        <span class="recall-num">Q${i+1}</span>
+  // Morning: ~55% of subtopics, first 2 recall Qs
+  const mornEnd = Math.ceil(total * 0.55);
+  const mornSubs = subs.slice(0, mornEnd);
+  const mornRec  = recs.slice(0, 2);
+
+  // Afternoon: just the first 2-3 recall questions formatted as quick-fire cards (10-min drill)
+  const aftnRec = recs.slice(0, Math.min(3, recs.length));
+
+  // Evening: remaining subtopics + remaining recall + exam tip
+  const eveSubs = subs.slice(mornEnd);
+  const eveRec  = recs.slice(2);
+
+  // ── Task helper ──
+  function buildTasks(subset, offset, label, badgeClass, badgeLabel, duration) {
+    if (d.isFriday) return ''; // Friday handled in examtip tab
+    const doneSubs = subset.filter((_, i) => completedTasks[`${slot}-${offset+i}`]).length;
+    let html = `<div class="session-header-strip">
+      <span class="session-time-badge ${badgeClass}">${badgeLabel}</span>
+      <span style="color:var(--dim);font-size:.58rem;letter-spacing:.1em">${duration}</span>
+      <span style="color:var(--dim);font-size:.56rem;margin-left:auto">${doneSubs}/${subset.length} done</span>
+    </div>`;
+    html += subset.map((st, i) => {
+      const idx = offset + i;
+      const done = completedTasks[`${slot}-${idx}`];
+      const txt = typeof st === "string" ? st : st.text;
+      const loc = typeof st === "object" && st.loc ? st.loc : "";
+      return `<div class="task-item${done?' done':''}" onclick="toggleTask(${slot},${idx})">
+        <div class="checkbox${done?' checked':''}"><span class="checkbox-tick">${done?'✓':''}</span></div>
         <div>
-          <p class="recall-q">${q}</p>
-          <button class="recall-btn${done?' done':''}" onclick="toggleRecall(${d.slot},${i})">${done?'✓ ANSWERED':'MARK ANSWERED'}</button>
+          <span class="task-text${done?' done':''}">${txt}</span>
+          ${loc?`<span class="task-loc">📍 ${loc}</span>`:''}
         </div>
-      </div>
-    </div>`;
-  }).join("");
+      </div>`;
+    }).join('');
+    return html;
+  }
 
-  // Exam tip / Friday detail
+  // ── Recall helper ──
+  function buildRecall(subset, rOffset, inline) {
+    if (!subset.length) return '';
+    let html = `<div class="recall-inline-label">🧠 CLOSE BOOK · ANSWER THEN TICK</div>`;
+    html += subset.map((q, i) => {
+      const idx = rOffset + i;
+      const done = completedRecall[`${slot}-r${idx}`];
+      return `<div class="recall-item${done?' done':''}">
+        <div class="recall-inner">
+          <span class="recall-num">Q${idx+1}</span>
+          <div>
+            <p class="recall-q">${q}</p>
+            <button class="recall-btn${done?' done':''}" onclick="toggleRecall(${slot},${idx})">${done?'✓ ANSWERED':'MARK ANSWERED'}</button>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+    return html;
+  }
+
+  // ── MORNING TAB (tab-subtopics) ──────────────────────────
+  const tl = document.getElementById("task-list");
+  const tasksDone = subs.filter((_, i) => completedTasks[`${slot}-${i}`]).length;
+  document.getElementById("task-count").textContent = `SUBTOPICS TOTAL · ${tasksDone}/${total} done`;
+
+  if (d.isFriday) {
+    tl.innerHTML = (d.subtopics||[]).map((st,i) => {
+      const done = completedTasks[`${d.slot}-${i}`];
+      const txt = typeof st === "string" ? st : st.text;
+      const loc = typeof st === "object" && st.loc ? st.loc : "";
+      return `<div class="task-item${done?' done':''}" onclick="toggleTask(${d.slot},${i})">
+        <div class="checkbox${done?' checked':''}"><span class="checkbox-tick">${done?'✓':''}</span></div>
+        <div>
+          <span class="task-text${done?' done':''}">${txt}</span>
+          ${loc?`<span class="task-loc">📍 ${loc}</span>`:''}
+        </div>
+      </div>`;
+    }).join('');
+  } else {
+    tl.innerHTML =
+      buildTasks(mornSubs, 0, 'Morning', 'morning', '🌅 MORNING READ', '45 min · Read & absorb') +
+      buildRecall(mornRec, 0, true);
+  }
+
+  // ── AFTERNOON TAB (tab-recall) — 10-min quick-fire ───────
+  const rl = document.getElementById("recall-list");
+  document.getElementById("recall-count").textContent = d.isFriday
+    ? `FRIDAY ACTIVE RECALL`
+    : `⚡ 10-MIN AFTERNOON DRILL — quick fire, no notes`;
+
+  if (d.isFriday) {
+    const recallDone = recs.filter((_,i) => completedRecall[`${slot}-r${i}`]).length;
+    rl.innerHTML = recs.map((q,i) => {
+      const done = completedRecall[`${slot}-r${i}`];
+      return `<div class="recall-item${done?' done':''}">
+        <div class="recall-inner">
+          <span class="recall-num">Q${i+1}</span>
+          <div>
+            <p class="recall-q">${q}</p>
+            <button class="recall-btn${done?' done':''}" onclick="toggleRecall(${slot},${i})">${done?'✓ ANSWERED':'MARK ANSWERED'}</button>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+  } else {
+    rl.innerHTML = `<div class="session-header-strip">
+      <span class="session-time-badge afternoon">☀️ AFTERNOON</span>
+      <span style="color:var(--dim);font-size:.58rem;letter-spacing:.1em">10 min only · close everything · go</span>
+    </div>
+    <div style="color:var(--muted);font-size:.72rem;line-height:1.7;margin-bottom:12px;padding:10px 12px;background:var(--bg3);border-radius:3px;border-left:3px solid var(--blue)">
+      No reading. Set a 10-minute timer. For each card below: think of your answer first — then mark it. Move on. Speed is the point.
+    </div>` +
+    aftnRec.map((q, i) => {
+      const done = completedRecall[`${slot}-r${i}`];
+      return `<div class="quickfire-card">
+        <div class="quickfire-label">⚡ QUICK FIRE #${i+1}</div>
+        <div class="quickfire-q">${q}</div>
+        <div class="quickfire-hint">Think → answer mentally → tick if you got it ✓</div>
+        <div style="margin-top:8px">
+          <button class="recall-btn${done?' done':''}" onclick="toggleRecall(${slot},${i})">${done?'✓ GOT IT':'MARK GOT IT'}</button>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  // ── EVENING TAB (tab-examtip) ─────────────────────────────
   const et = document.getElementById("examtip-content");
   if (d.isFriday) {
     const pastQsHtml = (d.pastQs||[]).map((pq,qi) => {
@@ -2414,15 +2547,19 @@ function renderDayDetail(slot) {
     et.innerHTML = `<div class="friday-detail">
       <div class="friday-label">// REVISION DAY — ACTIVE RECALL + PAST EXAM QUESTIONS</div>
       <div class="friday-text">No new chapters today. First: brain-dump the topics in the Tasks tab. Then attempt the past exam questions below — try to WRITE YOUR OWN ANSWER before revealing the model answer.<br><br>
-      <strong style="color:var(--teal)">Method:</strong> Read question → Set 5-min timer → Write your answer → Click 'Reveal' → Compare → Note every gap → Rewrite the gap in your own words.<br><br>
-      <strong style="color:var(--teal)">Goal:</strong> 2-3 past questions per session. Quality over quantity. One well-understood answer beats three skimmed.</div>
+      <strong style="color:var(--teal)">Method:</strong> Read question → Set 5-min timer → Write your answer → Click 'Reveal' → Compare → Note every gap.<br><br>
+      <strong style="color:var(--teal)">Goal:</strong> 2-3 past questions. Quality over quantity.</div>
     </div>
     <div style="margin-top:18px">${pastQsHtml}</div>`;
   } else {
-    et.innerHTML = `<div class="exam-tip-box">
-      <div class="exam-tip-label">// EXAMINER'S INTELLIGENCE — READ THIS CAREFULLY</div>
-      <div class="exam-tip-text">${d.examTip || "No specific tip for this session."}</div>
-    </div>`;
+    et.innerHTML =
+      buildTasks(eveSubs, mornEnd, 'Evening', 'evening', '🌙 EVENING PRACTICE', '40 min · deepen & consolidate') +
+      buildRecall(eveRec, 2, true) +
+      `<hr class="session-divider">
+      <div class="exam-tip-box" style="margin-top:0">
+        <div class="exam-tip-label">// EXAMINER'S INTELLIGENCE — READ THIS CAREFULLY</div>
+        <div class="exam-tip-text">${d.examTip || "No specific tip for this session."}</div>
+      </div>`;
   }
 
   // Nav buttons
